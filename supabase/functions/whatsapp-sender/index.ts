@@ -86,9 +86,9 @@ serve(async (req) => {
 
       for (const item of queueItems) {
         try {
-          // Verificar se tem instance_id (Evolution API) ou usar nina_settings (API Oficial)
+          // Verificar se tem instance_id (UAZAPI) ou usar nina_settings (API Oficial)
           if (item.instance_id) {
-            await sendViaEvolution(supabase, item, instanceSecretsCache);
+            await sendViaUazapi(supabase, item, instanceSecretsCache);
           } else {
             await sendViaOfficial(supabase, item, settingsCache);
           }

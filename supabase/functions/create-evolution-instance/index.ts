@@ -29,16 +29,13 @@ serve(async (req) => {
 
     const baseUrl = api_url.replace(/\/$/, '');
 
-    // 1. Criar a instância na UAZAPI
+    // 1. Criar a instância na UAZAPI - auth via query string, body com "Name"
     console.log(`[create-uazapi-instance] Creating instance: ${instance_name} at ${baseUrl}`);
-    const createRes = await fetch(`${baseUrl}/instance/init`, {
+    const createRes = await fetch(`${baseUrl}/instance/init?admintoken=${encodeURIComponent(api_key)}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'admintoken': api_key,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        instanceName: instance_name,
+        Name: instance_name,
       }),
     });
 
@@ -72,9 +69,9 @@ serve(async (req) => {
       // Aguardar um momento e buscar QR Code separadamente
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const qrRes = await fetch(`${baseUrl}/instance/qr`, {
+      const qrRes = await fetch(`${baseUrl}/instance/qr?token=${encodeURIComponent(instanceToken)}`, {
         method: 'GET',
-        headers: { 'token': instanceToken },
+        headers: { 'Content-Type': 'application/json' },
       });
 
       if (qrRes.ok) {
@@ -128,18 +125,13 @@ serve(async (req) => {
       });
     }
 
-    // 5. Configurar webhook automaticamente
+    // 5. Configurar webhook automaticamente - auth via query string
     const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
     try {
-      const webhookRes = await fetch(`${baseUrl}/webhook/set`, {
+      const webhookRes = await fetch(`${baseUrl}/webhook/set?token=${encodeURIComponent(instanceToken)}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'token': instanceToken,
-        },
-        body: JSON.stringify({
-          url: webhookUrl,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: webhookUrl }),
       });
       const webhookText = await webhookRes.text();
       console.log(`[create-uazapi-instance] Webhook response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);

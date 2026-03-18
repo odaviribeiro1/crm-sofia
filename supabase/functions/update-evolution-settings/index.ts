@@ -52,9 +52,9 @@ serve(async (req) => {
     }
 
     const baseUrl = secrets.api_url.replace(/\/$/, '');
+    const tokenParam = `token=${encodeURIComponent(secrets.api_key)}`;
 
-    // UAZAPI: Atualizar configurações da instância
-    // Nota: A UAZAPI pode usar endpoint diferente para settings - ajustar conforme documentação
+    // UAZAPI: Atualizar configurações da instância - auth via query string
     const payload = {
       rejectCall: reject_call ?? false,
       msgCall: reject_call ? (msg_call ?? '') : '',
@@ -65,13 +65,9 @@ serve(async (req) => {
 
     console.log(`[update-uazapi-settings] Updating settings for ${instance.instance_name}:`, payload);
 
-    // Tentar atualizar settings via UAZAPI
-    const res = await fetch(`${baseUrl}/instance/settings`, {
+    const res = await fetch(`${baseUrl}/instance/settings?${tokenParam}`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'token': secrets.api_key,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
@@ -88,38 +84,23 @@ serve(async (req) => {
       });
     }
 
-    // Se webhook_enabled foi explicitamente passado, atualizar o webhook na UAZAPI
+    // Se webhook_enabled foi explicitamente passado, atualizar o webhook
     if (webhook_enabled !== undefined) {
       const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
-
       console.log(`[update-uazapi-settings] Updating webhook for ${instance.instance_name}: enabled=${webhook_enabled}`);
 
       if (webhook_enabled) {
-        const webhookRes = await fetch(`${baseUrl}/webhook/set`, {
+        const webhookRes = await fetch(`${baseUrl}/webhook/set?${tokenParam}`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': secrets.api_key,
-          },
-          body: JSON.stringify({
-            url: webhookUrl,
-          }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: webhookUrl }),
         });
-
         const webhookText = await webhookRes.text();
         console.log(`[update-uazapi-settings] Webhook response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
-
-        if (!webhookRes.ok) {
-          console.warn(`[update-uazapi-settings] Webhook update failed: ${webhookText.substring(0, 200)}`);
-        }
       } else {
-        // Deletar webhook
-        const webhookRes = await fetch(`${baseUrl}/webhook/delete`, {
+        const webhookRes = await fetch(`${baseUrl}/webhook/delete?${tokenParam}`, {
           method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': secrets.api_key,
-          },
+          headers: { 'Content-Type': 'application/json' },
         });
         const webhookText = await webhookRes.text();
         console.log(`[update-uazapi-settings] Webhook delete response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);

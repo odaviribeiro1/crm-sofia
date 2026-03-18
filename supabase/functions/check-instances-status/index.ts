@@ -18,16 +18,13 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // Buscar todas as instâncias UAZAPI ativas
     const { data: instances, error: instancesError } = await supabase
       .from('whatsapp_instances')
       .select('id, instance_name, instance_id_external, provider_type, status')
       .in('provider_type', ['evolution_self_hosted', 'evolution_cloud'])
       .eq('is_active', true);
 
-    if (instancesError) {
-      throw instancesError;
-    }
+    if (instancesError) throw instancesError;
 
     console.log(`[check-instances-status] Found ${instances?.length || 0} instances to check`);
 
@@ -42,21 +39,15 @@ serve(async (req) => {
           .single();
 
         if (!secrets) {
-          console.log(`[check-instances-status] No secrets for instance ${instance.id}`);
           results.push({ id: instance.id, status: 'error', error: 'No secrets' });
           continue;
         }
 
-        // Verificar status via UAZAPI
+        // UAZAPI: auth via query string
+        const baseUrl = secrets.api_url.replace(/\/$/, '');
         const response = await fetch(
-          `${secrets.api_url.replace(/\/$/, '')}/instance/status`,
-          {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'token': secrets.api_key,
-            },
-          }
+          `${baseUrl}/instance/status?token=${encodeURIComponent(secrets.api_key)}`,
+          { method: 'GET', headers: { 'Content-Type': 'application/json' } }
         );
 
         let newStatus = 'disconnected';
@@ -73,8 +64,6 @@ serve(async (req) => {
             case 'connecting':
               newStatus = 'connecting';
               break;
-            case 'close':
-            case 'disconnected':
             default:
               newStatus = 'disconnected';
           }
@@ -83,39 +72,25 @@ serve(async (req) => {
         if (newStatus !== instance.status) {
           await supabase
             .from('whatsapp_instances')
-            .update({ 
-              status: newStatus,
-              updated_at: new Date().toISOString()
-            })
+            .update({ status: newStatus, updated_at: new Date().toISOString() })
             .eq('id', instance.id);
-
           console.log(`[check-instances-status] Updated ${instance.id}: ${instance.status} -> ${newStatus}`);
         }
 
         results.push({ id: instance.id, status: newStatus });
-
       } catch (instanceError: unknown) {
-        console.error(`[check-instances-status] Error checking instance ${instance.id}:`, instanceError);
         const errMsg = instanceError instanceof Error ? instanceError.message : 'Unknown error';
         results.push({ id: instance.id, status: 'error', error: errMsg });
       }
     }
 
-    return new Response(JSON.stringify({
-      success: true,
-      checked: results.length,
-      results,
-    }), {
+    return new Response(JSON.stringify({ success: true, checked: results.length, results }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error: unknown) {
-    console.error('[check-instances-status] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({
-      success: false,
-      error: message,
-    }), {
+    return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

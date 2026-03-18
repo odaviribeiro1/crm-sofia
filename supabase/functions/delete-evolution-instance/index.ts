@@ -47,17 +47,17 @@ serve(async (req) => {
     let uazapiDeleted = false;
     let uazapiError: string | null = null;
 
-    // Deletar na UAZAPI
+    // Deletar na UAZAPI - auth via query string
     if (instance.provider_type !== 'official' && secrets?.api_url && secrets?.api_key) {
       try {
         const baseUrl = secrets.api_url.replace(/\/$/, '');
-        const deleteRes = await fetch(`${baseUrl}/instance/delete`, {
-          method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-            'token': secrets.api_key,
-          },
-        });
+        const deleteRes = await fetch(
+          `${baseUrl}/instance?token=${encodeURIComponent(secrets.api_key)}`,
+          {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+          }
+        );
 
         const deleteText = await deleteRes.text();
         console.log(`[delete-uazapi-instance] UAZAPI DELETE response (${deleteRes.status}): ${deleteText.substring(0, 300)}`);

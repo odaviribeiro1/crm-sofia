@@ -6,11 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-async function fetchWithRetry(
-  url: string, 
-  options: RequestInit, 
-  retries = 3
-): Promise<Response> {
+async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
       console.log(`[send-uazapi-message] Attempt ${attempt + 1}/${retries} to ${url}`);
@@ -19,25 +15,17 @@ async function fetchWithRetry(
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
       console.log(`[send-uazapi-message] Attempt ${attempt + 1} failed: ${errorMessage}`);
-      
-      if (attempt === retries - 1) {
-        throw error;
-      }
-      
+      if (attempt === retries - 1) throw error;
       const delay = 1000 * Math.pow(2, attempt);
-      console.log(`[send-uazapi-message] Waiting ${delay}ms before retry...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
   throw new Error('All retries failed');
 }
 
-/** Normalizes Brazilian phone numbers to E.164 without '+' (e.g. "5511999998888") */
 function normalizeBrazilianPhone(raw: string): string | null {
   let digits = raw.replace(/\D/g, '');
-  if (digits.startsWith('55') && digits.length > 11) {
-    digits = digits.slice(2);
-  }
+  if (digits.startsWith('55') && digits.length > 11) digits = digits.slice(2);
   if (digits.length < 10 || digits.length > 11) return null;
   if (digits.length === 10) {
     const firstDigit = parseInt(digits[2], 10);
@@ -78,13 +66,8 @@ serve(async (req) => {
       .eq('id', instance_id)
       .single();
 
-    if (instanceError || !instance) {
-      throw new Error('Instance not found');
-    }
-
-    if (instance.status !== 'connected') {
-      throw new Error(`Instance is not connected. Status: ${instance.status}`);
-    }
+    if (instanceError || !instance) throw new Error('Instance not found');
+    if (instance.status !== 'connected') throw new Error(`Instance is not connected. Status: ${instance.status}`);
 
     const { data: secrets, error: secretsError } = await supabase
       .from('whatsapp_instance_secrets')
@@ -92,103 +75,62 @@ serve(async (req) => {
       .eq('instance_id', instance_id)
       .single();
 
-    if (secretsError || !secrets) {
-      throw new Error('Instance secrets not found');
-    }
+    if (secretsError || !secrets) throw new Error('Instance secrets not found');
 
     const formattedNumber = normalizeBrazilianPhone(phone_number) ?? phone_number.replace(/\D/g, '');
     const baseUrl = secrets.api_url.replace(/\/$/, '');
-
-    // Headers UAZAPI: usa 'token' em vez de 'apikey'
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'token': secrets.api_key,
-    };
+    const tokenParam = `token=${encodeURIComponent(secrets.api_key)}`;
 
     let endpoint: string;
     let payload: any;
 
     switch (message_type) {
       case 'text':
-        endpoint = `${baseUrl}/sendText`;
-        payload = {
-          number: formattedNumber,
-          text: content,
-        };
+        endpoint = `${baseUrl}/send/text?${tokenParam}`;
+        payload = { number: formattedNumber, text: content };
         break;
-
       case 'audio':
-        endpoint = `${baseUrl}/sendAudio`;
-        payload = {
-          number: formattedNumber,
-          audio: media_url,
-        };
+        endpoint = `${baseUrl}/send/audio?${tokenParam}`;
+        payload = { number: formattedNumber, audio: media_url };
         break;
-
       case 'image':
-        endpoint = `${baseUrl}/sendMedia`;
-        payload = {
-          number: formattedNumber,
-          mediatype: 'image',
-          media: media_url,
-          caption: content || '',
-        };
+        endpoint = `${baseUrl}/send/media?${tokenParam}`;
+        payload = { number: formattedNumber, mediatype: 'image', media: media_url, caption: content || '' };
         break;
-
       case 'document':
-        endpoint = `${baseUrl}/sendMedia`;
-        payload = {
-          number: formattedNumber,
-          mediatype: 'document',
-          media: media_url,
-          caption: content || '',
-          fileName: file_name || 'document',
-        };
+        endpoint = `${baseUrl}/send/media?${tokenParam}`;
+        payload = { number: formattedNumber, mediatype: 'document', media: media_url, caption: content || '', fileName: file_name || 'document' };
         break;
-
       default:
         throw new Error(`Unsupported message type: ${message_type}`);
     }
 
-    console.log(`[send-uazapi-message] Sending to: ${endpoint}`);
+    console.log(`[send-uazapi-message] Sending to: ${baseUrl}/send/...`);
 
     const response = await fetchWithRetry(endpoint, {
       method: 'POST',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
 
     const responseText = await response.text();
     console.log(`[send-uazapi-message] Response: ${response.status} - ${responseText.substring(0, 500)}`);
 
-    if (!response.ok) {
-      throw new Error(`UAZAPI error: ${responseText}`);
-    }
+    if (!response.ok) throw new Error(`UAZAPI error: ${responseText}`);
 
     let responseData;
-    try {
-      responseData = JSON.parse(responseText);
-    } catch {
-      responseData = { raw: responseText };
-    }
+    try { responseData = JSON.parse(responseText); } catch { responseData = { raw: responseText }; }
 
     const messageId = responseData?.key?.id || responseData?.messageId || responseData?.id;
 
-    return new Response(JSON.stringify({
-      success: true,
-      messageId,
-      data: responseData,
-    }), {
+    return new Response(JSON.stringify({ success: true, messageId, data: responseData }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
 
   } catch (error: unknown) {
     console.error('[send-uazapi-message] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
-    return new Response(JSON.stringify({
-      success: false,
-      error: message,
-    }), {
+    return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });

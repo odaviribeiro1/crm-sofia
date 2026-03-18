@@ -25,7 +25,6 @@ serve(async (req) => {
       });
     }
 
-    // Buscar dados da instância
     const { data: instance, error: instErr } = await supabase
       .from('whatsapp_instances')
       .select('*, whatsapp_instance_secrets(*)')
@@ -48,10 +47,12 @@ serve(async (req) => {
     }
 
     const baseUrl = secrets.api_url.replace(/\/$/, '');
+    const tokenParam = `token=${encodeURIComponent(secrets.api_key)}`;
 
-    // Verificar status de conexão primeiro via UAZAPI
-    const stateRes = await fetch(`${baseUrl}/instance/status`, {
-      headers: { 'token': secrets.api_key },
+    // Verificar status de conexão via UAZAPI - auth via query string
+    const stateRes = await fetch(`${baseUrl}/instance/status?${tokenParam}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
     });
 
     let currentState = 'disconnected';
@@ -64,7 +65,6 @@ serve(async (req) => {
 
     console.log(`[get-uazapi-qrcode] Instance ${instance.instance_name} state: ${currentState}`);
 
-    // Se já conectado, atualizar no banco e retornar
     if (currentState === 'connected' || currentState === 'open') {
       await supabase
         .from('whatsapp_instances')
@@ -72,18 +72,16 @@ serve(async (req) => {
         .eq('id', instance_id);
 
       return new Response(JSON.stringify({
-        success: true,
-        connected: true,
-        status: 'connected',
-        qr_code: null,
+        success: true, connected: true, status: 'connected', qr_code: null,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Buscar QR Code via UAZAPI
-    const qrRes = await fetch(`${baseUrl}/instance/qr`, {
-      headers: { 'token': secrets.api_key },
+    // Buscar QR Code via UAZAPI - auth via query string
+    const qrRes = await fetch(`${baseUrl}/instance/qr?${tokenParam}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
     });
 
     const qrText = await qrRes.text();
@@ -98,7 +96,6 @@ serve(async (req) => {
       connected = qrData?.status === 'connected' || qrData?.state === 'connected' || qrData?.state === 'open';
     } catch {}
 
-    // Atualizar no banco
     if (qrCode || connected) {
       await supabase
         .from('whatsapp_instances')

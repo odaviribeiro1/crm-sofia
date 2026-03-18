@@ -275,7 +275,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
     console.log('[Sender] Presence error (non-fatal):', presenceErr);
   }
 
-  console.log(`[Sender] Evolution API endpoint: ${endpoint}`);
+  console.log(`[Sender] UAZAPI endpoint: ${endpoint}`);
 
   const response = await fetch(endpoint, {
     method: 'POST',

@@ -122,7 +122,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
               onEvolutionApiKeyChange(e.target.value);
               setTestResult(null);
             }}
-            placeholder="Sua chave de API"
+            placeholder="Seu admin token da UAZAPI"
             className="font-mono text-sm"
           />
         </motion.div>

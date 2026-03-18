@@ -40,7 +40,7 @@ const DAYS_OF_WEEK = [
   { value: 6, label: 'Sáb' },
 ];
 
-// Using shared prompt from @/prompts/default-nina-prompt
+// Using shared prompt from @/prompts/default-nina-prompt (Sofia)
 
 export interface AgentSettingsRef {
   save: () => Promise<void>;

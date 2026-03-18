@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log(`[create-evolution-instance] Received ${req.method} request`);
+  console.log(`[create-uazapi-instance] Received ${req.method} request`);
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -29,33 +29,29 @@ serve(async (req) => {
 
     const baseUrl = api_url.replace(/\/$/, '');
 
-    // 1. Criar a instância na Evolution API
-    console.log(`[create-evolution-instance] Creating instance: ${instance_name} at ${baseUrl}`);
-    const createRes = await fetch(`${baseUrl}/instance/create`, {
+    // 1. Criar a instância na UAZAPI
+    console.log(`[create-uazapi-instance] Creating instance: ${instance_name} at ${baseUrl}`);
+    const createRes = await fetch(`${baseUrl}/instance/init`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': api_key,
+        'admintoken': api_key,
       },
       body: JSON.stringify({
         instanceName: instance_name,
-        qrcode: true,
-        integration: 'WHATSAPP-BAILEYS',
-        groupsIgnore: true,
       }),
     });
 
     const createText = await createRes.text();
-    console.log(`[create-evolution-instance] Create response (${createRes.status}): ${createText.substring(0, 500)}`);
+    console.log(`[create-uazapi-instance] Create response (${createRes.status}): ${createText.substring(0, 500)}`);
 
     let createData: any = {};
     try { createData = JSON.parse(createText); } catch {}
 
-    // A Evolution pode retornar 201 ou 200
     if (!createRes.ok && createRes.status !== 200 && createRes.status !== 201) {
       return new Response(JSON.stringify({
         success: false,
-        error: `Erro ao criar instância na Evolution API: ${createRes.status}`,
+        error: `Erro ao criar instância na UAZAPI: ${createRes.status}`,
         details: createText,
       }), {
         status: 400,
@@ -63,27 +59,30 @@ serve(async (req) => {
       });
     }
 
+    // Extrair token da instância do retorno da criação
+    const instanceToken = createData?.token || createData?.instance?.token || api_key;
+
     // 2. Buscar QR Code
     let qrCode: string | null = null;
 
     // Tenta extrair QR do retorno da criação
-    qrCode = createData?.qrcode?.base64 || createData?.hash?.qrcode || null;
+    qrCode = createData?.qrCode || createData?.qrcode?.base64 || createData?.base64 || null;
 
     if (!qrCode) {
       // Aguardar um momento e buscar QR Code separadamente
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const qrRes = await fetch(`${baseUrl}/instance/connect/${instance_name}`, {
+      const qrRes = await fetch(`${baseUrl}/instance/qr`, {
         method: 'GET',
-        headers: { 'apikey': api_key },
+        headers: { 'token': instanceToken },
       });
 
       if (qrRes.ok) {
         const qrText = await qrRes.text();
-        console.log(`[create-evolution-instance] QR response: ${qrText.substring(0, 200)}`);
+        console.log(`[create-uazapi-instance] QR response: ${qrText.substring(0, 200)}`);
         try {
           const qrData = JSON.parse(qrText);
-          qrCode = qrData?.base64 || qrData?.qrcode?.base64 || null;
+          qrCode = qrData?.qrCode || qrData?.base64 || qrData?.qrcode?.base64 || null;
         } catch {}
       }
     }
@@ -104,20 +103,20 @@ serve(async (req) => {
       .single();
 
     if (insertError) {
-      console.error('[create-evolution-instance] DB insert error:', insertError);
+      console.error('[create-uazapi-instance] DB insert error:', insertError);
       return new Response(JSON.stringify({ success: false, error: insertError.message }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // 4. Salvar secrets
+    // 4. Salvar secrets (usa instanceToken se disponível)
     const { error: secretsError } = await supabase
       .from('whatsapp_instance_secrets')
       .insert({
         instance_id: instance.id,
         api_url,
-        api_key,
+        api_key: instanceToken,
       });
 
     if (secretsError) {
@@ -132,31 +131,20 @@ serve(async (req) => {
     // 5. Configurar webhook automaticamente
     const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
     try {
-      const webhookRes = await fetch(`${baseUrl}/webhook/set/${instance_name}`, {
+      const webhookRes = await fetch(`${baseUrl}/webhook/set`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': api_key,
+          'token': instanceToken,
         },
         body: JSON.stringify({
-          webhook: {
-            enabled: true,
-            url: webhookUrl,
-            webhook_by_events: false,
-            webhook_base64: false,
-            events: [
-              'MESSAGES_UPSERT',
-              'MESSAGES_UPDATE',
-              'CONNECTION_UPDATE',
-              'QRCODE_UPDATED',
-            ],
-          },
+          url: webhookUrl,
         }),
       });
       const webhookText = await webhookRes.text();
-      console.log(`[create-evolution-instance] Webhook response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
+      console.log(`[create-uazapi-instance] Webhook response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
     } catch (webhookErr) {
-      console.warn('[create-evolution-instance] Failed to set webhook (non-fatal):', webhookErr);
+      console.warn('[create-uazapi-instance] Failed to set webhook (non-fatal):', webhookErr);
     }
 
     return new Response(JSON.stringify({
@@ -169,7 +157,7 @@ serve(async (req) => {
     });
 
   } catch (error: unknown) {
-    console.error('[create-evolution-instance] Error:', error);
+    console.error('[create-uazapi-instance] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,

@@ -222,21 +222,23 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
   let payload: any;
   let presenceType: string;
 
+  const baseUrl = secrets.api_url.replace(/\/$/, '');
+
   switch (queueItem.message_type) {
     case 'text':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendText/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendText`;
       payload = { number: targetNumber, text: queueItem.content };
       presenceType = 'composing';
       break;
 
     case 'audio':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendWhatsAppAudio/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendAudio`;
       payload = { number: targetNumber, audio: queueItem.media_url };
       presenceType = 'recording';
       break;
 
     case 'image':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendMedia/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendMedia`;
       payload = {
         number: targetNumber,
         mediatype: 'image',
@@ -247,7 +249,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
       break;
 
     case 'document':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendMedia/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendMedia`;
       payload = {
         number: targetNumber,
         mediatype: 'document',
@@ -259,7 +261,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
       break;
 
     default:
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendText/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendText`;
       payload = { number: targetNumber, text: queueItem.content };
       presenceType = 'composing';
   }

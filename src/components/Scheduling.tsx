@@ -406,7 +406,7 @@ const Scheduling: React.FC = () => {
                                                 style={{ minHeight: `${Math.max(40, (app.duration / 60) * 80)}px` }}
                                             >
                                                 <div className="font-bold truncate flex items-center gap-1">
-                                                    {app.metadata?.source === 'nina_ai' && (
+                                                    {app.metadata?.source === 'sofia_ai' && (
                                                       <Bot className="w-3 h-3 text-primary flex-shrink-0" />
                                                     )}
                                                     {app.title}

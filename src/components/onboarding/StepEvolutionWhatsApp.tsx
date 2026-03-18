@@ -55,7 +55,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
 
       if (data?.success) {
         setTestResult({ ok: true, message: data.message || 'Conexão estabelecida!' });
-        toast.success('Evolution API conectada! ✅');
+        toast.success('UAZAPI conectada! ✅');
       } else {
         setTestResult({ ok: false, message: data?.error || 'Falha na conexão' });
         toast.error(data?.error || 'Falha na conexão');

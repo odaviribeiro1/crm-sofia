@@ -254,7 +254,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
 
       if (!res.ok) {
         const txt = await res.text();
-        throw new Error(`Evolution respondeu ${res.status}: ${txt.substring(0, 200)}`);
+        throw new Error(`UAZAPI respondeu ${res.status}: ${txt.substring(0, 200)}`);
       }
 
       toast.success(`Webhook reconfigurado para ${instance.name} ✅`);

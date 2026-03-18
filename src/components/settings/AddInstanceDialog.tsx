@@ -209,7 +209,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
               <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5 text-foreground">
                 <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
                 <p className="text-xs">
-                  Configure e salve a <strong>URL da Evolution API</strong> e a <strong>API Key</strong> nas configurações antes de criar instâncias.
+                  Configure e salve a <strong>URL da UAZAPI</strong> e a <strong>API Key</strong> nas configurações antes de criar instâncias.
                 </p>
               </div>
             )}

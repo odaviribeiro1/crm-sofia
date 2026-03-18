@@ -77,8 +77,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
   const [testPhone, setTestPhone] = useState('');
   const [testMessage, setTestMessage] = useState('');
   const [testSending, setTestSending] = useState(false);
-  const [evolutionTesting, setEvolutionTesting] = useState(false);
-  const [evolutionTestResult, setEvolutionTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [uazapiTesting, setUazapiTesting] = useState(false);
+  const [uazapiTestResult, setUazapiTestResult] = useState<{ ok: boolean; message: string } | null>(null);
   
   // Audio test states
   const [audioTestOpen, setAudioTestOpen] = useState(false);

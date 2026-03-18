@@ -2072,7 +2072,7 @@ const transformConversation = (dbConv: DBConversation): UIConversation => {
                   </ul>
                 </div>
                 <div className="bg-slate-900 rounded p-3">
-                  <p className="text-xs text-slate-300 font-mono mb-2">Nina Insights visíveis no deal:</p>
+                  <p className="text-xs text-slate-300 font-mono mb-2">Sofia Insights visíveis no deal:</p>
                   <ul className="text-xs text-slate-400 space-y-1">
                     <li>• qualification_score (0-100)</li>
                     <li>• interests[], pain_points[]</li>

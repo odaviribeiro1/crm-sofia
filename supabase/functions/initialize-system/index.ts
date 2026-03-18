@@ -50,7 +50,7 @@ const DEFAULT_TEAM_FUNCTIONS = [
   { name: 'CS', description: 'Customer Success', is_active: true },
 ];
 
-// Default system prompt for Nina
+// Default system prompt for Sofia
 const DEFAULT_SYSTEM_PROMPT = `<system_instruction>
 <role>
 Você é a Nina, Assistente de Relacionamento e Vendas da Empresa X.

@@ -8,7 +8,7 @@ import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useAuth } from '@/hooks/useAuth';
 import { WhatsAppInstancesManager } from './WhatsAppInstancesManager';
 
-interface NinaSettings {
+interface SofiaSettings {
   id?: string;
   whatsapp_access_token: string | null;
   whatsapp_phone_number_id: string | null;
@@ -22,8 +22,8 @@ interface NinaSettings {
   elevenlabs_speed: number | null;
   elevenlabs_speaker_boost: boolean;
   audio_response_enabled: boolean;
-  evolution_api_url: string | null;
-  evolution_api_key: string | null;
+  uazapi_url: string | null;
+  uazapi_key: string | null;
 }
 
 const VOICE_OPTIONS = [
@@ -69,7 +69,7 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
   const [saving, setSaving] = useState(false);
   const [showWhatsAppToken, setShowWhatsAppToken] = useState(false);
   const [showElevenLabsKey, setShowElevenLabsKey] = useState(false);
-  const [showEvolutionApiKey, setShowEvolutionApiKey] = useState(false);
+  const [showUazapiKey, setShowUazapiKey] = useState(false);
   const [copiedWebhook, setCopiedWebhook] = useState(false);
   const [webhookOpen, setWebhookOpen] = useState(false);
   const [advancedVoiceOpen, setAdvancedVoiceOpen] = useState(false);
@@ -77,8 +77,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
   const [testPhone, setTestPhone] = useState('');
   const [testMessage, setTestMessage] = useState('');
   const [testSending, setTestSending] = useState(false);
-  const [evolutionTesting, setEvolutionTesting] = useState(false);
-  const [evolutionTestResult, setEvolutionTestResult] = useState<{ ok: boolean; message: string } | null>(null);
+  const [uazapiTesting, setUazapiTesting] = useState(false);
+  const [uazapiTestResult, setUazapiTestResult] = useState<{ ok: boolean; message: string } | null>(null);
   
   // Audio test states
   const [audioTestOpen, setAudioTestOpen] = useState(false);
@@ -99,14 +99,14 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     contact_id: string;
     conversation_id: string;
     message_id: string;
-    queued_for_nina: boolean;
+    queued_for_sofia: boolean;
   } | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement>(null);
   
   // Gera um verify token único para esta instalação
   const generateUniqueToken = () => `verify-${crypto.randomUUID().slice(0, 8)}`;
   
-  const [settings, setSettings] = useState<NinaSettings>({
+  const [settings, setSettings] = useState<SofiaSettings>({
     whatsapp_access_token: null,
     whatsapp_phone_number_id: null,
     whatsapp_verify_token: generateUniqueToken(),
@@ -119,8 +119,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     elevenlabs_speed: 1.0,
     elevenlabs_speaker_boost: true,
     audio_response_enabled: false,
-    evolution_api_url: null,
-    evolution_api_key: null,
+    uazapi_url: null,
+    uazapi_key: null,
   });
 
   // Auto-save ElevenLabs API key when field loses focus
@@ -143,25 +143,25 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     }
   };
 
-  // Auto-save Evolution API credentials when fields lose focus
-  const handleEvolutionApiBlur = async () => {
+  // Auto-save UAZAPI credentials when fields lose focus
+  const handleUazapiBlur = async () => {
     if (!settings.id) return;
-    if (!settings.evolution_api_url && !settings.evolution_api_key) return;
+    if (!settings.uazapi_url && !settings.uazapi_key) return;
 
     try {
       const { error } = await supabase
         .from('nina_settings')
         .update({
-          evolution_api_url: settings.evolution_api_url,
-          evolution_api_key: settings.evolution_api_key,
+          evolution_api_url: settings.uazapi_url,
+          evolution_api_key: settings.uazapi_key,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', settings.id);
 
       if (error) throw error;
-      toast.success('Evolution API salva automaticamente');
+      toast.success('UAZAPI salva automaticamente');
     } catch (error) {
-      console.error('Error auto-saving Evolution API settings:', error);
+      console.error('Error auto-saving UAZAPI settings:', error);
     }
   };
 
@@ -221,8 +221,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
         elevenlabs_speed: data.elevenlabs_speed,
         elevenlabs_speaker_boost: data.elevenlabs_speaker_boost,
         audio_response_enabled: data.audio_response_enabled || false,
-        evolution_api_url: (data as any).evolution_api_url ?? null,
-        evolution_api_key: (data as any).evolution_api_key ?? null,
+        uazapi_url: (data as any).evolution_api_url ?? null,
+        uazapi_key: (data as any).evolution_api_key ?? null,
       });
     } catch (error) {
       console.error('[ApiSettings] Error loading settings:', error);
@@ -256,8 +256,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
           elevenlabs_speed: settings.elevenlabs_speed,
           elevenlabs_speaker_boost: settings.elevenlabs_speaker_boost,
           audio_response_enabled: settings.audio_response_enabled,
-          evolution_api_url: settings.evolution_api_url,
-          evolution_api_key: settings.evolution_api_key,
+          evolution_api_url: settings.uazapi_url,
+          evolution_api_key: settings.uazapi_key,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', settings.id!);
@@ -280,18 +280,18 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     setTimeout(() => setCopiedWebhook(false), 2000);
   };
 
-  const handleTestEvolutionConnection = async () => {
-    if (!settings.evolution_api_url || !settings.evolution_api_key) {
-      toast.error('Preencha a URL e a API Key da Evolution antes de testar');
+  const handleTestUazapiConnection = async () => {
+    if (!settings.uazapi_url || !settings.uazapi_key) {
+      toast.error('Preencha a URL e a API Key da UAZAPI antes de testar');
       return;
     }
-    setEvolutionTesting(true);
-    setEvolutionTestResult(null);
+    setUazapiTesting(true);
+    setUazapiTestResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('test-evolution-connection', {
         body: {
-          api_url: settings.evolution_api_url,
-          api_key: settings.evolution_api_key,
+          api_url: settings.uazapi_url,
+          api_key: settings.uazapi_key,
           instance_name: '__health_check__',
           provider_type: 'evolution_self_hosted',
         }
@@ -300,25 +300,24 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
       if (error) throw error;
 
       if (data?.success) {
-        setEvolutionTestResult({ ok: true, message: 'Conexão com a Evolution API estabelecida!' });
-        toast.success('Evolution API conectada! ✅');
+        setUazapiTestResult({ ok: true, message: 'Conexão com a UAZAPI estabelecida!' });
+        toast.success('UAZAPI conectada! ✅');
       } else if (data?.status === 401 || data?.status === 403) {
-        setEvolutionTestResult({ ok: false, message: 'API Key inválida ou sem permissão.' });
+        setUazapiTestResult({ ok: false, message: 'API Key inválida ou sem permissão.' });
         toast.error('API Key inválida');
       } else if (data?.details) {
-        // Got a response from the server (even if instance not found) = API is reachable
-        setEvolutionTestResult({ ok: true, message: 'Servidor Evolution API acessível e respondendo!' });
-        toast.success('Evolution API acessível! ✅');
+        setUazapiTestResult({ ok: true, message: 'Servidor UAZAPI acessível e respondendo!' });
+        toast.success('UAZAPI acessível! ✅');
       } else {
-        setEvolutionTestResult({ ok: false, message: data?.error || 'Não foi possível conectar à Evolution API.' });
+        setUazapiTestResult({ ok: false, message: data?.error || 'Não foi possível conectar à UAZAPI.' });
         toast.error('Falha na conexão');
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      setEvolutionTestResult({ ok: false, message: msg });
+      setUazapiTestResult({ ok: false, message: msg });
       toast.error('Erro ao testar conexão');
     } finally {
-      setEvolutionTesting(false);
+      setUazapiTesting(false);
     }
   };
 
@@ -479,7 +478,7 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
           contact_id: data.contact_id,
           conversation_id: data.conversation_id,
           message_id: data.message_id,
-          queued_for_nina: data.queued_for_nina
+          queued_for_sofia: data.queued_for_nina
         });
         toast.success('Áudio simulado com sucesso!', {
           description: `Transcrição: "${data.transcription?.substring(0, 50)}..."`
@@ -535,33 +534,33 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
 
   return (
     <div className="space-y-6">
-      {/* Evolution API — Configuração Global */}
+      {/* UAZAPI — Configuração Global */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-3">
           <Smartphone className="w-5 h-5 text-primary" />
           <div>
-            <h3 className="font-semibold text-foreground">Evolution API</h3>
+            <h3 className="font-semibold text-foreground">UAZAPI</h3>
             <p className="text-xs text-muted-foreground">Configure as credenciais globais para criar instâncias WhatsApp</p>
           </div>
           <div className={`ml-auto flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border ${
-            settings.evolution_api_url && settings.evolution_api_key
+            settings.uazapi_url && settings.uazapi_key
               ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800'
               : 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
           }`}>
-            <span className={`h-2 w-2 rounded-full ${settings.evolution_api_url && settings.evolution_api_key ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-            {settings.evolution_api_url && settings.evolution_api_key ? 'API Key registrada' : 'API Key não configurada'}
+            <span className={`h-2 w-2 rounded-full ${settings.uazapi_url && settings.uazapi_key ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+            {settings.uazapi_url && settings.uazapi_key ? 'API Key registrada' : 'API Key não configurada'}
           </div>
         </div>
 
         <div className="grid gap-3">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">URL da Evolution API</label>
+            <label className="text-sm font-medium text-foreground">URL da UAZAPI</label>
             <input
               type="url"
-              placeholder="https://evo.seudominio.com"
-              value={settings.evolution_api_url ?? ''}
-              onChange={e => setSettings(s => ({ ...s, evolution_api_url: e.target.value || null }))}
-              onBlur={handleEvolutionApiBlur}
+              placeholder="https://api.uazapi.com"
+              value={settings.uazapi_url ?? ''}
+              onChange={e => setSettings(s => ({ ...s, uazapi_url: e.target.value || null }))}
+              onBlur={handleUazapiBlur}
               className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
@@ -569,19 +568,19 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
             <label className="text-sm font-medium text-foreground">API Key Global</label>
             <div className="relative">
               <input
-                type={showEvolutionApiKey ? 'text' : 'password'}
-                placeholder="Sua API Key do Evolution"
-                value={settings.evolution_api_key ?? ''}
-                onChange={e => setSettings(s => ({ ...s, evolution_api_key: e.target.value || null }))}
-                onBlur={handleEvolutionApiBlur}
+                type={showUazapiKey ? 'text' : 'password'}
+                placeholder="Sua API Key da UAZAPI"
+                value={settings.uazapi_key ?? ''}
+                onChange={e => setSettings(s => ({ ...s, uazapi_key: e.target.value || null }))}
+                onBlur={handleUazapiBlur}
                 className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pr-10"
               />
               <button
                 type="button"
-                onClick={() => setShowEvolutionApiKey(!showEvolutionApiKey)}
+                onClick={() => setShowUazapiKey(!showUazapiKey)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {showEvolutionApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showUazapiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             <p className="text-xs text-muted-foreground">As credenciais são salvas automaticamente ao sair do campo</p>
@@ -592,36 +591,36 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
             <Button
               type="button"
               variant="outline"
-              onClick={handleTestEvolutionConnection}
-              disabled={evolutionTesting || !settings.evolution_api_url || !settings.evolution_api_key}
+              onClick={handleTestUazapiConnection}
+              disabled={uazapiTesting || !settings.uazapi_url || !settings.uazapi_key}
               className="gap-2"
             >
-              {evolutionTesting ? (
+              {uazapiTesting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Wifi className="w-4 h-4" />
               )}
-              {evolutionTesting ? 'Testando...' : 'Testar Conexão'}
+              {uazapiTesting ? 'Testando...' : 'Testar Conexão'}
             </Button>
 
-            {evolutionTestResult && (
-              <div className={`flex items-center gap-2 text-sm font-medium ${evolutionTestResult.ok ? 'text-emerald-600' : 'text-destructive'}`}>
-                {evolutionTestResult.ok
+            {uazapiTestResult && (
+              <div className={`flex items-center gap-2 text-sm font-medium ${uazapiTestResult.ok ? 'text-emerald-600' : 'text-destructive'}`}>
+                {uazapiTestResult.ok
                   ? <CheckCircle2 className="w-4 h-4 shrink-0" />
                   : <XCircle className="w-4 h-4 shrink-0" />
                 }
-                <span>{evolutionTestResult.message}</span>
+                <span>{uazapiTestResult.message}</span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Evolution API Instances */}
+      {/* UAZAPI Instances */}
       <div className="rounded-xl border border-border bg-card p-6">
         <WhatsAppInstancesManager
-          evolutionApiUrl={settings.evolution_api_url}
-          evolutionApiKey={settings.evolution_api_key}
+          evolutionApiUrl={settings.uazapi_url}
+          evolutionApiKey={settings.uazapi_key}
         />
       </div>
 
@@ -1092,9 +1091,9 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
                       <p className="text-foreground font-mono">{audioSimulateResult.message_id.slice(0, 8)}...</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Nina:</span>
-                      <p className={audioSimulateResult.queued_for_nina ? 'text-emerald-600' : 'text-amber-600'}>
-                        {audioSimulateResult.queued_for_nina ? '✅ Processando' : '⏸️ Não enfileirado'}
+                      <span className="text-muted-foreground">Sofia:</span>
+                      <p className={audioSimulateResult.queued_for_sofia ? 'text-emerald-600' : 'text-amber-600'}>
+                        {audioSimulateResult.queued_for_sofia ? '✅ Processando' : '⏸️ Não enfileirado'}
                       </p>
                     </div>
                   </div>

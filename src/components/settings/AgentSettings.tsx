@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import PromptGeneratorSheet from './PromptGeneratorSheet';
 import PromptTestModal from './PromptTestModal';
 import KnowledgeBase from './KnowledgeBase';
-import { DEFAULT_NINA_PROMPT } from '@/prompts/default-nina-prompt';
+import { DEFAULT_NINA_PROMPT } from '@/prompts/default-nina-prompt'; // Sofia prompt
 import { useAuth } from '@/hooks/useAuth';
 import {
   Tooltip,
@@ -87,7 +87,7 @@ const AgentSettings = forwardRef<AgentSettingsRef, {}>((props, ref) => {
     }
     
     try {
-      // Fetch global nina_settings (no user_id filter - single tenant)
+      // Fetch global settings (no user_id filter - single tenant)
       const { data, error } = await supabase
         .from('nina_settings')
         .select('*')

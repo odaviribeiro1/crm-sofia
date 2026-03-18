@@ -39,8 +39,8 @@ export function useOnboardingStatus(): OnboardingStatus {
     },
     {
       id: 'whatsapp',
-      title: 'Evolution API',
-      description: 'Configure a conexão com a Evolution API',
+      title: 'UAZAPI',
+      description: 'Configure a conexão com a UAZAPI',
       isComplete: false,
       isRequired: true,
     },

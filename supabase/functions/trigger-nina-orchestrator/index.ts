@@ -6,18 +6,18 @@ const corsHeaders = {
 };
 
 // This is a trigger function that can be called by cron jobs or pg_net
-// It simply calls the nina-orchestrator function
+// It simply calls the sofia-orchestrator (nina-orchestrator) function
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    console.log('[Trigger] Starting Nina orchestrator trigger...');
+    console.log('[Trigger] Starting Sofia orchestrator trigger...');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     
-    // Call the nina-orchestrator function
+    // Call the sofia orchestrator (nina-orchestrator) function
     const response = await fetch(`${supabaseUrl}/functions/v1/nina-orchestrator`, {
       method: 'POST',
       headers: {
@@ -28,7 +28,7 @@ serve(async (req) => {
     });
 
     const result = await response.json();
-    console.log('[Trigger] Nina orchestrator result:', result);
+    console.log('[Trigger] Sofia orchestrator result:', result);
 
     return new Response(JSON.stringify({ 
       triggered: true, 

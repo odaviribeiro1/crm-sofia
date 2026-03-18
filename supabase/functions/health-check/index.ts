@@ -107,8 +107,8 @@ Deno.serve(async (req) => {
         message: 'Configurações não encontradas. Execute o onboarding.',
       });
     } else {
-      // Check WhatsApp configuration (Evolution API)
-      const evolutionConfigured = !!(
+      // Check WhatsApp configuration (UAZAPI)
+      const uazapiConfigured = !!(
         settings.evolution_api_url &&
         settings.evolution_api_key
       );
@@ -123,25 +123,25 @@ Deno.serve(async (req) => {
         .limit(1);
       hasConnectedInstance = !!(instances && instances.length > 0);
 
-      if (evolutionConfigured && hasConnectedInstance) {
+      if (uazapiConfigured && hasConnectedInstance) {
         results.push({
           component: 'whatsapp',
           status: 'ok',
-          message: 'Evolution API configurada e instância conectada',
+          message: 'UAZAPI configurada e instância conectada',
           details: {
-            hasEvolutionUrl: true,
-            hasEvolutionKey: true,
+            hasUazapiUrl: true,
+            hasUazapiKey: true,
             hasConnectedInstance: true,
           },
         });
-      } else if (evolutionConfigured) {
+      } else if (uazapiConfigured) {
         results.push({
           component: 'whatsapp',
           status: 'warning',
-          message: 'Evolution API configurada, mas nenhuma instância conectada',
+          message: 'UAZAPI configurada, mas nenhuma instância conectada',
           details: {
-            hasEvolutionUrl: true,
-            hasEvolutionKey: true,
+            hasUazapiUrl: true,
+            hasUazapiKey: true,
             hasConnectedInstance: false,
           },
         });
@@ -149,10 +149,10 @@ Deno.serve(async (req) => {
         results.push({
           component: 'whatsapp',
           status: 'warning',
-          message: 'Evolution API não configurada',
+          message: 'UAZAPI não configurada',
           details: {
-            hasEvolutionUrl: !!settings.evolution_api_url,
-            hasEvolutionKey: !!settings.evolution_api_key,
+            hasUazapiUrl: !!settings.evolution_api_url,
+            hasUazapiKey: !!settings.evolution_api_key,
             hasConnectedInstance: false,
           },
         });

@@ -62,7 +62,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
   const handleCreate = async () => {
     if (!validate()) return;
     if (!credentialsConfigured) {
-      toast.error('Configure e salve a URL e API Key da Evolution antes de continuar');
+      toast.error('Configure e salve a URL e API Key da UAZAPI antes de continuar');
       return;
     }
 
@@ -179,7 +179,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Nova Instância WhatsApp</DialogTitle>
-          <DialogDescription>Conecte um número via Evolution API</DialogDescription>
+          <DialogDescription>Conecte um número via UAZAPI</DialogDescription>
         </DialogHeader>
 
         {/* Step indicator */}
@@ -209,7 +209,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
               <div className="flex items-start gap-2 p-3 rounded-lg border border-primary/20 bg-primary/5 text-foreground">
                 <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0 text-primary" />
                 <p className="text-xs">
-                  Configure e salve a <strong>URL da Evolution API</strong> e a <strong>API Key</strong> nas configurações antes de criar instâncias.
+                  Configure e salve a <strong>URL da UAZAPI</strong> e a <strong>API Key</strong> nas configurações antes de criar instâncias.
                 </p>
               </div>
             )}
@@ -219,7 +219,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
               <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/40">
                 <CheckCircle className="w-4 h-4 text-primary shrink-0" />
                 <div className="text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">Evolution API configurada</span>
+                  <span className="font-medium text-foreground">UAZAPI configurada</span>
                   <br />
                   {evolutionApiUrl}
                 </div>
@@ -285,7 +285,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
             </div>
             <div className="text-center">
               <p className="font-medium text-foreground">Criando instância...</p>
-              <p className="text-sm text-muted-foreground mt-1">Conectando ao Evolution API e gerando QR Code</p>
+              <p className="text-sm text-muted-foreground mt-1">Conectando à UAZAPI e gerando QR Code</p>
             </div>
           </div>
         )}

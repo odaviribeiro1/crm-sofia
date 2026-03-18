@@ -472,7 +472,7 @@ export function useConversations() {
       });
 
       const statusLabels = {
-        nina: 'IA ativada',
+        nina: 'Sofia ativada',
         human: 'Atendimento humano ativado',
         paused: 'Conversa pausada'
       };

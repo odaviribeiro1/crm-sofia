@@ -55,7 +55,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
 
       if (data?.success) {
         setTestResult({ ok: true, message: data.message || 'Conexão estabelecida!' });
-        toast.success('Evolution API conectada! ✅');
+        toast.success('UAZAPI conectada! ✅');
       } else {
         setTestResult({ ok: false, message: data?.error || 'Falha na conexão' });
         toast.error(data?.error || 'Falha na conexão');
@@ -85,9 +85,9 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
         >
           <Server className="w-8 h-8 text-emerald-400" />
         </motion.div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">Evolution API</h3>
+        <h3 className="text-xl font-semibold text-foreground mb-2">UAZAPI</h3>
         <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          Configure a conexão com sua Evolution API para gerenciar o WhatsApp.
+          Configure a conexão com sua UAZAPI para gerenciar o WhatsApp.
         </p>
       </motion.div>
 
@@ -95,7 +95,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
         <motion.div variants={itemVariants} className="space-y-2">
           <Label htmlFor="evolutionUrl" className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-muted-foreground" />
-            URL da Evolution API
+            URL da UAZAPI
           </Label>
           <Input
             id="evolutionUrl"
@@ -104,7 +104,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
               onEvolutionApiUrlChange(e.target.value);
               setTestResult(null);
             }}
-            placeholder="https://sua-evolution-api.com"
+            placeholder="https://api.uazapi.com"
             className="font-mono text-sm"
           />
         </motion.div>

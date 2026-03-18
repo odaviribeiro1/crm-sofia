@@ -35,8 +35,8 @@ import { toast } from 'sonner';
 
 const providerLabels: Record<ProviderType, string> = {
   official: 'API Oficial (Meta)',
-  evolution_self_hosted: 'Evolution Self-Hosted',
-  evolution_cloud: 'Evolution Cloud',
+  evolution_self_hosted: 'UAZAPI Self-Hosted',
+  evolution_cloud: 'UAZAPI Cloud',
 };
 
 const providerIcons: Record<ProviderType, React.ReactNode> = {
@@ -174,7 +174,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
 
       if (error) throw error;
 
-      // 2. Sincronizar com Evolution API (apenas instâncias Evolution)
+      // 2. Sincronizar com UAZAPI (apenas instâncias UAZAPI)
       if (settingsInstance.provider_type !== 'official') {
         const { error: fnError } = await supabase.functions.invoke('update-evolution-settings', {
           body: {
@@ -188,7 +188,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
           },
         });
         if (fnError) {
-          console.warn('[handleSaveSettings] Evolution API sync failed (non-fatal):', fnError);
+          console.warn('[handleSaveSettings] UAZAPI sync failed (non-fatal):', fnError);
           toast.warning('Configurações salvas localmente, mas falhou ao sincronizar com a API');
         }
       }
@@ -226,7 +226,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
 
   const handleReconfigureWebhook = async (instance: WhatsAppInstance) => {
     if (!evolutionApiUrl || !evolutionApiKey) {
-      toast.error('URL e API Key da Evolution não configuradas');
+      toast.error('URL e API Key da UAZAPI não configuradas');
       return;
     }
     setReconfiguringWebhook(instance.id);
@@ -254,7 +254,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
 
       if (!res.ok) {
         const txt = await res.text();
-        throw new Error(`Evolution respondeu ${res.status}: ${txt.substring(0, 200)}`);
+        throw new Error(`UAZAPI respondeu ${res.status}: ${txt.substring(0, 200)}`);
       }
 
       toast.success(`Webhook reconfigurado para ${instance.name} ✅`);
@@ -305,7 +305,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
         <div>
           <h3 className="text-lg font-semibold text-foreground">Instâncias WhatsApp</h3>
           <p className="text-sm text-muted-foreground">
-            Gerencie suas conexões com WhatsApp via Evolution API ou API Oficial
+            Gerencie suas conexões com WhatsApp via UAZAPI ou API Oficial
           </p>
         </div>
         <div className="flex items-center gap-2">

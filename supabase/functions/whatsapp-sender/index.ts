@@ -298,7 +298,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
   }
 
   const whatsappMessageId = responseData?.key?.id || responseData?.messageId || responseData?.id;
-  console.log('[Sender] Evolution message sent, ID:', whatsappMessageId);
+  console.log('[Sender] UAZAPI message sent, ID:', whatsappMessageId);
 
   // Atualizar ou criar registro da mensagem
   await updateMessageRecord(supabase, queueItem, whatsappMessageId);

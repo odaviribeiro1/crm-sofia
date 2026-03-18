@@ -85,9 +85,9 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
         >
           <Server className="w-8 h-8 text-emerald-400" />
         </motion.div>
-        <h3 className="text-xl font-semibold text-foreground mb-2">Evolution API</h3>
+        <h3 className="text-xl font-semibold text-foreground mb-2">UAZAPI</h3>
         <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          Configure a conexão com sua Evolution API para gerenciar o WhatsApp.
+          Configure a conexão com sua UAZAPI para gerenciar o WhatsApp.
         </p>
       </motion.div>
 

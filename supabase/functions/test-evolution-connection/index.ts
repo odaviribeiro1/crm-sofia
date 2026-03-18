@@ -25,13 +25,16 @@ serve(async (req) => {
 
     const baseUrl = api_url.replace(/\/$/, '');
 
-    // UAZAPI: auth via query string, endpoint /instance/all
-    const fetchUrl = `${baseUrl}/instance/all?admintoken=${encodeURIComponent(api_key)}`;
-    console.log(`[test-uazapi-connection] Health check: ${baseUrl}/instance/all`);
+    // UAZAPI: AdminToken via header (case-sensitive)
+    const fetchUrl = `${baseUrl}/instance/all`;
+    console.log(`[test-uazapi-connection] Health check: ${fetchUrl}`);
 
     const response = await fetch(fetchUrl, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'AdminToken': api_key,
+      },
     });
     const responseText = await response.text();
 

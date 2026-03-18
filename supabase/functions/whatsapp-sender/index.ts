@@ -212,26 +212,26 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
     ? instance.instance_id_external
     : instance.instance_name;
 
-  // UAZAPI: auth via query string
+  // UAZAPI: Token via header
   const baseUrl = secrets.api_url.replace(/\/$/, '');
-  const tokenParam = `token=${encodeURIComponent(secrets.api_key)}`;
+  const instanceHeaders = { 'Content-Type': 'application/json', 'Token': secrets.api_key };
 
   let endpoint: string;
   let payload: any;
 
   switch (queueItem.message_type) {
     case 'text':
-      endpoint = `${baseUrl}/send/text?${tokenParam}`;
+      endpoint = `${baseUrl}/send/text`;
       payload = { number: targetNumber, text: queueItem.content };
       break;
 
     case 'audio':
-      endpoint = `${baseUrl}/send/audio?${tokenParam}`;
+      endpoint = `${baseUrl}/send/audio`;
       payload = { number: targetNumber, audio: queueItem.media_url };
       break;
 
     case 'image':
-      endpoint = `${baseUrl}/send/media?${tokenParam}`;
+      endpoint = `${baseUrl}/send/media`;
       payload = {
         number: targetNumber,
         mediatype: 'image',
@@ -241,7 +241,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
       break;
 
     case 'document':
-      endpoint = `${baseUrl}/send/media?${tokenParam}`;
+      endpoint = `${baseUrl}/send/media`;
       payload = {
         number: targetNumber,
         mediatype: 'document',
@@ -252,7 +252,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
       break;
 
     default:
-      endpoint = `${baseUrl}/send/text?${tokenParam}`;
+      endpoint = `${baseUrl}/send/text`;
       payload = { number: targetNumber, text: queueItem.content };
   }
 
@@ -263,7 +263,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
 
   const response = await fetch(endpoint, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: instanceHeaders,
     body: JSON.stringify(payload),
   });
 

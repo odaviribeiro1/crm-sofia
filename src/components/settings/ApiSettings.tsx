@@ -1091,9 +1091,9 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
                       <p className="text-foreground font-mono">{audioSimulateResult.message_id.slice(0, 8)}...</p>
                     </div>
                     <div>
-                      <span className="text-muted-foreground">Nina:</span>
-                      <p className={audioSimulateResult.queued_for_nina ? 'text-emerald-600' : 'text-amber-600'}>
-                        {audioSimulateResult.queued_for_nina ? '✅ Processando' : '⏸️ Não enfileirado'}
+                      <span className="text-muted-foreground">Sofia:</span>
+                      <p className={audioSimulateResult.queued_for_sofia ? 'text-emerald-600' : 'text-amber-600'}>
+                        {audioSimulateResult.queued_for_sofia ? '✅ Processando' : '⏸️ Não enfileirado'}
                       </p>
                     </div>
                   </div>

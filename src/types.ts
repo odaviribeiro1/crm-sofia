@@ -76,7 +76,7 @@ export interface Conversation {
 
 // Metadata for AI-created appointments
 export interface AppointmentMetadata {
-  source?: 'nina_ai' | 'manual';
+  source?: 'sofia_ai' | 'manual';
   conversation_id?: string;
   created_at_conversation?: string;
 }

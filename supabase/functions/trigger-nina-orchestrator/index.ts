@@ -28,7 +28,7 @@ serve(async (req) => {
     });
 
     const result = await response.json();
-    console.log('[Trigger] Nina orchestrator result:', result);
+    console.log('[Trigger] Sofia orchestrator result:', result);
 
     return new Response(JSON.stringify({ 
       triggered: true, 

@@ -13,7 +13,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('[Trigger] Starting Nina orchestrator trigger...');
+    console.log('[Trigger] Starting Sofia orchestrator trigger...');
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     

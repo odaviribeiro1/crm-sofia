@@ -534,33 +534,33 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
 
   return (
     <div className="space-y-6">
-      {/* Evolution API — Configuração Global */}
+      {/* UAZAPI — Configuração Global */}
       <div className="rounded-xl border border-border bg-card p-6 space-y-4">
         <div className="flex items-center gap-3">
           <Smartphone className="w-5 h-5 text-primary" />
           <div>
-            <h3 className="font-semibold text-foreground">Evolution API</h3>
+            <h3 className="font-semibold text-foreground">UAZAPI</h3>
             <p className="text-xs text-muted-foreground">Configure as credenciais globais para criar instâncias WhatsApp</p>
           </div>
           <div className={`ml-auto flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium border ${
-            settings.evolution_api_url && settings.evolution_api_key
+            settings.uazapi_url && settings.uazapi_key
               ? 'bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-800'
               : 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-800'
           }`}>
-            <span className={`h-2 w-2 rounded-full ${settings.evolution_api_url && settings.evolution_api_key ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
-            {settings.evolution_api_url && settings.evolution_api_key ? 'API Key registrada' : 'API Key não configurada'}
+            <span className={`h-2 w-2 rounded-full ${settings.uazapi_url && settings.uazapi_key ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+            {settings.uazapi_url && settings.uazapi_key ? 'API Key registrada' : 'API Key não configurada'}
           </div>
         </div>
 
         <div className="grid gap-3">
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">URL da Evolution API</label>
+            <label className="text-sm font-medium text-foreground">URL da UAZAPI</label>
             <input
               type="url"
-              placeholder="https://evo.seudominio.com"
-              value={settings.evolution_api_url ?? ''}
-              onChange={e => setSettings(s => ({ ...s, evolution_api_url: e.target.value || null }))}
-              onBlur={handleEvolutionApiBlur}
+              placeholder="https://api.uazapi.com"
+              value={settings.uazapi_url ?? ''}
+              onChange={e => setSettings(s => ({ ...s, uazapi_url: e.target.value || null }))}
+              onBlur={handleUazapiBlur}
               className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             />
           </div>
@@ -568,19 +568,19 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
             <label className="text-sm font-medium text-foreground">API Key Global</label>
             <div className="relative">
               <input
-                type={showEvolutionApiKey ? 'text' : 'password'}
-                placeholder="Sua API Key do Evolution"
-                value={settings.evolution_api_key ?? ''}
-                onChange={e => setSettings(s => ({ ...s, evolution_api_key: e.target.value || null }))}
-                onBlur={handleEvolutionApiBlur}
+                type={showUazapiKey ? 'text' : 'password'}
+                placeholder="Sua API Key da UAZAPI"
+                value={settings.uazapi_key ?? ''}
+                onChange={e => setSettings(s => ({ ...s, uazapi_key: e.target.value || null }))}
+                onBlur={handleUazapiBlur}
                 className="flex h-10 w-full rounded-md border border-input bg-secondary/50 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 pr-10"
               />
               <button
                 type="button"
-                onClick={() => setShowEvolutionApiKey(!showEvolutionApiKey)}
+                onClick={() => setShowUazapiKey(!showUazapiKey)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               >
-                {showEvolutionApiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showUazapiKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
             <p className="text-xs text-muted-foreground">As credenciais são salvas automaticamente ao sair do campo</p>
@@ -591,36 +591,36 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
             <Button
               type="button"
               variant="outline"
-              onClick={handleTestEvolutionConnection}
-              disabled={evolutionTesting || !settings.evolution_api_url || !settings.evolution_api_key}
+              onClick={handleTestUazapiConnection}
+              disabled={uazapiTesting || !settings.uazapi_url || !settings.uazapi_key}
               className="gap-2"
             >
-              {evolutionTesting ? (
+              {uazapiTesting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Wifi className="w-4 h-4" />
               )}
-              {evolutionTesting ? 'Testando...' : 'Testar Conexão'}
+              {uazapiTesting ? 'Testando...' : 'Testar Conexão'}
             </Button>
 
-            {evolutionTestResult && (
-              <div className={`flex items-center gap-2 text-sm font-medium ${evolutionTestResult.ok ? 'text-emerald-600' : 'text-destructive'}`}>
-                {evolutionTestResult.ok
+            {uazapiTestResult && (
+              <div className={`flex items-center gap-2 text-sm font-medium ${uazapiTestResult.ok ? 'text-emerald-600' : 'text-destructive'}`}>
+                {uazapiTestResult.ok
                   ? <CheckCircle2 className="w-4 h-4 shrink-0" />
                   : <XCircle className="w-4 h-4 shrink-0" />
                 }
-                <span>{evolutionTestResult.message}</span>
+                <span>{uazapiTestResult.message}</span>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Evolution API Instances */}
+      {/* UAZAPI Instances */}
       <div className="rounded-xl border border-border bg-card p-6">
         <WhatsAppInstancesManager
-          evolutionApiUrl={settings.evolution_api_url}
-          evolutionApiKey={settings.evolution_api_key}
+          evolutionApiUrl={settings.uazapi_url}
+          evolutionApiKey={settings.uazapi_key}
         />
       </div>
 

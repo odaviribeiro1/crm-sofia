@@ -35,8 +35,8 @@ import { toast } from 'sonner';
 
 const providerLabels: Record<ProviderType, string> = {
   official: 'API Oficial (Meta)',
-  evolution_self_hosted: 'Evolution Self-Hosted',
-  evolution_cloud: 'Evolution Cloud',
+  evolution_self_hosted: 'UAZAPI Self-Hosted',
+  evolution_cloud: 'UAZAPI Cloud',
 };
 
 const providerIcons: Record<ProviderType, React.ReactNode> = {

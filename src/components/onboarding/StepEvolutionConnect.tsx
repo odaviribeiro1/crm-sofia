@@ -358,7 +358,7 @@ export const StepEvolutionConnect: React.FC<StepEvolutionConnectProps> = ({
               </div>
               <div className="text-center">
                 <p className="font-medium text-foreground">Criando instância...</p>
-                <p className="text-sm text-muted-foreground mt-1">Conectando à Evolution API e gerando QR Code</p>
+                <p className="text-sm text-muted-foreground mt-1">Conectando à UAZAPI e gerando QR Code</p>
               </div>
             </motion.div>
           )}

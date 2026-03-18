@@ -87,7 +87,7 @@ const AgentSettings = forwardRef<AgentSettingsRef, {}>((props, ref) => {
     }
     
     try {
-      // Fetch global nina_settings (no user_id filter - single tenant)
+      // Fetch global settings (no user_id filter - single tenant)
       const { data, error } = await supabase
         .from('nina_settings')
         .select('*')

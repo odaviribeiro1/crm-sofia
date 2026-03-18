@@ -1531,7 +1531,7 @@ Data e hora atual: {{ data_hora }} ({{ dia_semana }})
 </role>
 
 <company>
-Nome: Viver de IA
+Nome: Empresa X
 Tagline: A plataforma das empresas que crescem com Inteligência Artificial
 Missão: Democratizar o acesso à IA para empresários e gestores brasileiros, com soluções Plug & Play que geram resultados reais e mensuráveis.
 Fundadores: Rafael Milagre (Fundador, Mentor G4, Embaixador Lovable) e Yago Martins (CEO, Prêmio Growth Awards 2024)

@@ -143,25 +143,25 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     }
   };
 
-  // Auto-save Evolution API credentials when fields lose focus
-  const handleEvolutionApiBlur = async () => {
+  // Auto-save UAZAPI credentials when fields lose focus
+  const handleUazapiBlur = async () => {
     if (!settings.id) return;
-    if (!settings.evolution_api_url && !settings.evolution_api_key) return;
+    if (!settings.uazapi_url && !settings.uazapi_key) return;
 
     try {
       const { error } = await supabase
         .from('nina_settings')
         .update({
-          evolution_api_url: settings.evolution_api_url,
-          evolution_api_key: settings.evolution_api_key,
+          evolution_api_url: settings.uazapi_url,
+          evolution_api_key: settings.uazapi_key,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', settings.id);
 
       if (error) throw error;
-      toast.success('Evolution API salva automaticamente');
+      toast.success('UAZAPI salva automaticamente');
     } catch (error) {
-      console.error('Error auto-saving Evolution API settings:', error);
+      console.error('Error auto-saving UAZAPI settings:', error);
     }
   };
 

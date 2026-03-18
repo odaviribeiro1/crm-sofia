@@ -2002,7 +2002,7 @@ const transformConversation = (dbConv: DBConversation): UIConversation => {
                 <div className="bg-slate-900 rounded p-3 mb-3">
                   <p className="text-xs text-slate-300 font-mono mb-2">Quando message_breaking_enabled = true:</p>
                   <ul className="text-xs text-slate-400 space-y-1">
-                    <li>• Nina retorna resposta com delimitador <code className="text-emerald-400">\n\n</code></li>
+                    <li>• Sofia retorna resposta com delimitador <code className="text-emerald-400">\n\n</code></li>
                     <li>• whatsapp-sender split() por <code>\n\n</code></li>
                     <li>• Cada chunk vira uma mensagem separada na send_queue</li>
                     <li>• scheduled_at aumenta ~1.5s entre chunks</li>

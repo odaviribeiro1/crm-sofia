@@ -25,7 +25,6 @@ serve(async (req) => {
       });
     }
 
-    // 1. Buscar instância e seus secrets
     const { data: instance, error: instanceError } = await supabase
       .from('whatsapp_instances')
       .select('*')
@@ -45,37 +44,37 @@ serve(async (req) => {
       .eq('instance_id', instance_id)
       .maybeSingle();
 
-    let evolutionDeleted = false;
-    let evolutionError: string | null = null;
+    let uazapiDeleted = false;
+    let uazapiError: string | null = null;
 
-    // 2. Deletar na Evolution API (apenas para instâncias Evolution)
+    // Deletar na UAZAPI
     if (instance.provider_type !== 'official' && secrets?.api_url && secrets?.api_key) {
       try {
         const baseUrl = secrets.api_url.replace(/\/$/, '');
-        const deleteRes = await fetch(`${baseUrl}/instance/delete/${instance.instance_name}`, {
+        const deleteRes = await fetch(`${baseUrl}/instance/delete`, {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
-            'apikey': secrets.api_key,
+            'token': secrets.api_key,
           },
         });
 
         const deleteText = await deleteRes.text();
-        console.log(`[delete-evolution-instance] Evolution DELETE response (${deleteRes.status}): ${deleteText.substring(0, 300)}`);
+        console.log(`[delete-uazapi-instance] UAZAPI DELETE response (${deleteRes.status}): ${deleteText.substring(0, 300)}`);
 
         if (deleteRes.ok) {
-          evolutionDeleted = true;
+          uazapiDeleted = true;
         } else {
-          evolutionError = `Evolution API retornou ${deleteRes.status}: ${deleteText.substring(0, 200)}`;
-          console.warn('[delete-evolution-instance] Evolution API error (non-fatal):', evolutionError);
+          uazapiError = `UAZAPI retornou ${deleteRes.status}: ${deleteText.substring(0, 200)}`;
+          console.warn('[delete-uazapi-instance] UAZAPI error (non-fatal):', uazapiError);
         }
       } catch (err) {
-        evolutionError = err instanceof Error ? err.message : 'Erro desconhecido';
-        console.warn('[delete-evolution-instance] Failed to delete from Evolution API (non-fatal):', evolutionError);
+        uazapiError = err instanceof Error ? err.message : 'Erro desconhecido';
+        console.warn('[delete-uazapi-instance] Failed to delete from UAZAPI (non-fatal):', uazapiError);
       }
     }
 
-    // 3. Soft delete no banco (is_active = false) independente do resultado da Evolution API
+    // Soft delete no banco
     const { error: dbError } = await supabase
       .from('whatsapp_instances')
       .update({ is_active: false })
@@ -90,14 +89,14 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       success: true,
-      evolution_deleted: evolutionDeleted,
-      evolution_error: evolutionError,
+      uazapi_deleted: uazapiDeleted,
+      uazapi_error: uazapiError,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error: unknown) {
-    console.error('[delete-evolution-instance] Error:', error);
+    console.error('[delete-uazapi-instance] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,

@@ -1334,7 +1334,7 @@ export const api = {
 
     console.log('[API] Message created with ID:', msgData.id);
 
-    // Then queue message for sending WITH message_id reference and instance_id for Evolution routing
+    // Then queue message for sending WITH message_id reference and instance_id for UAZAPI routing
     const { error: sendError } = await supabase
       .from('send_queue')
       .insert({

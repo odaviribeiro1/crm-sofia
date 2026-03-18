@@ -48,25 +48,24 @@ serve(async (req) => {
     }
 
     const baseUrl = secrets.api_url.replace(/\/$/, '');
-    const instanceName = instance.instance_name;
 
-    // Verificar status de conexão primeiro
-    const stateRes = await fetch(`${baseUrl}/instance/connectionState/${instanceName}`, {
-      headers: { 'apikey': secrets.api_key },
+    // Verificar status de conexão primeiro via UAZAPI
+    const stateRes = await fetch(`${baseUrl}/instance/status`, {
+      headers: { 'token': secrets.api_key },
     });
 
     let currentState = 'disconnected';
     if (stateRes.ok) {
       try {
         const stateData = await stateRes.json();
-        currentState = stateData?.state || stateData?.instance?.state || 'disconnected';
+        currentState = stateData?.status || stateData?.state || stateData?.connection || 'disconnected';
       } catch {}
     }
 
-    console.log(`[get-evolution-qrcode] Instance ${instanceName} state: ${currentState}`);
+    console.log(`[get-uazapi-qrcode] Instance ${instance.instance_name} state: ${currentState}`);
 
     // Se já conectado, atualizar no banco e retornar
-    if (currentState === 'open') {
+    if (currentState === 'connected' || currentState === 'open') {
       await supabase
         .from('whatsapp_instances')
         .update({ status: 'connected', qr_code: null, updated_at: new Date().toISOString() })
@@ -82,21 +81,21 @@ serve(async (req) => {
       });
     }
 
-    // Buscar QR Code
-    const qrRes = await fetch(`${baseUrl}/instance/connect/${instanceName}`, {
-      headers: { 'apikey': secrets.api_key },
+    // Buscar QR Code via UAZAPI
+    const qrRes = await fetch(`${baseUrl}/instance/qr`, {
+      headers: { 'token': secrets.api_key },
     });
 
     const qrText = await qrRes.text();
-    console.log(`[get-evolution-qrcode] QR response (${qrRes.status}): ${qrText.substring(0, 300)}`);
+    console.log(`[get-uazapi-qrcode] QR response (${qrRes.status}): ${qrText.substring(0, 300)}`);
 
     let qrCode: string | null = null;
     let connected = false;
 
     try {
       const qrData = JSON.parse(qrText);
-      qrCode = qrData?.base64 || qrData?.qrcode?.base64 || null;
-      connected = qrData?.state === 'open' || qrData?.instance?.state === 'open';
+      qrCode = qrData?.qrCode || qrData?.base64 || qrData?.qrcode?.base64 || null;
+      connected = qrData?.status === 'connected' || qrData?.state === 'connected' || qrData?.state === 'open';
     } catch {}
 
     // Atualizar no banco
@@ -121,7 +120,7 @@ serve(async (req) => {
     });
 
   } catch (error: unknown) {
-    console.error('[get-evolution-qrcode] Error:', error);
+    console.error('[get-uazapi-qrcode] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,

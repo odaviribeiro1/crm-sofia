@@ -86,9 +86,9 @@ serve(async (req) => {
 
       for (const item of queueItems) {
         try {
-          // Verificar se tem instance_id (Evolution API) ou usar nina_settings (API Oficial)
+          // Verificar se tem instance_id (UAZAPI) ou usar nina_settings (API Oficial)
           if (item.instance_id) {
-            await sendViaEvolution(supabase, item, instanceSecretsCache);
+            await sendViaUazapi(supabase, item, instanceSecretsCache);
           } else {
             await sendViaOfficial(supabase, item, settingsCache);
           }
@@ -149,10 +149,10 @@ serve(async (req) => {
 });
 
 // ========================================
-// EVOLUTION API SENDER
+// UAZAPI SENDER
 // ========================================
-async function sendViaEvolution(supabase: any, queueItem: any, secretsCache: Record<string, any>) {
-  console.log(`[Sender] Sending via Evolution API: ${queueItem.id}`);
+async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record<string, any>) {
+  console.log(`[Sender] Sending via UAZAPI: ${queueItem.id}`);
 
   // Buscar instância
   const { data: instance, error: instanceError } = await supabase
@@ -212,31 +212,33 @@ async function sendViaEvolution(supabase: any, queueItem: any, secretsCache: Rec
     ? instance.instance_id_external
     : instance.instance_name;
 
-  // Headers de autenticação
+  // Headers de autenticação UAZAPI
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'apikey': secrets.api_key,
+    'token': secrets.api_key,
   };
 
   let endpoint: string;
   let payload: any;
   let presenceType: string;
 
+  const baseUrl = secrets.api_url.replace(/\/$/, '');
+
   switch (queueItem.message_type) {
     case 'text':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendText/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendText`;
       payload = { number: targetNumber, text: queueItem.content };
       presenceType = 'composing';
       break;
 
     case 'audio':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendWhatsAppAudio/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendAudio`;
       payload = { number: targetNumber, audio: queueItem.media_url };
       presenceType = 'recording';
       break;
 
     case 'image':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendMedia/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendMedia`;
       payload = {
         number: targetNumber,
         mediatype: 'image',
@@ -247,7 +249,7 @@ async function sendViaEvolution(supabase: any, queueItem: any, secretsCache: Rec
       break;
 
     case 'document':
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendMedia/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendMedia`;
       payload = {
         number: targetNumber,
         mediatype: 'document',
@@ -259,32 +261,21 @@ async function sendViaEvolution(supabase: any, queueItem: any, secretsCache: Rec
       break;
 
     default:
-      endpoint = `${secrets.api_url.replace(/\/$/, '')}/message/sendText/${instanceIdentifier}`;
+      endpoint = `${baseUrl}/sendText`;
       payload = { number: targetNumber, text: queueItem.content };
       presenceType = 'composing';
   }
 
-  // Enviar presence ("digitando..." ou "gravando...") antes da mensagem
-  const presenceNumber = isLid ? whatsappId : `${targetNumber}@s.whatsapp.net`;
+  // Enviar presence ("digitando..." ou "gravando...") antes da mensagem - UAZAPI pode não suportar esse endpoint
+  // Mantemos como non-fatal
   try {
-    const presenceUrl = `${secrets.api_url.replace(/\/$/, '')}/chat/sendPresence/${instanceIdentifier}`;
-    console.log(`[Sender] Sending presence '${presenceType}' to ${presenceNumber}`);
-    await fetch(presenceUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        number: presenceNumber,
-        delay: 3000,
-        presence: presenceType,
-      }),
-    });
-    // Aguardar um pouco para o "digitando" aparecer antes de enviar
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log(`[Sender] Skipping presence for UAZAPI (not supported in standard API)`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
   } catch (presenceErr) {
     console.log('[Sender] Presence error (non-fatal):', presenceErr);
   }
 
-  console.log(`[Sender] Evolution API endpoint: ${endpoint}`);
+  console.log(`[Sender] UAZAPI endpoint: ${endpoint}`);
 
   const response = await fetch(endpoint, {
     method: 'POST',
@@ -293,10 +284,10 @@ async function sendViaEvolution(supabase: any, queueItem: any, secretsCache: Rec
   });
 
   const responseText = await response.text();
-  console.log(`[Sender] Evolution response: ${response.status} - ${responseText.substring(0, 300)}`);
+  console.log(`[Sender] UAZAPI response: ${response.status} - ${responseText.substring(0, 300)}`);
 
   if (!response.ok) {
-    throw new Error(`Evolution API error: ${responseText}`);
+    throw new Error(`UAZAPI error: ${responseText}`);
   }
 
   let responseData;
@@ -307,7 +298,7 @@ async function sendViaEvolution(supabase: any, queueItem: any, secretsCache: Rec
   }
 
   const whatsappMessageId = responseData?.key?.id || responseData?.messageId || responseData?.id;
-  console.log('[Sender] Evolution message sent, ID:', whatsappMessageId);
+  console.log('[Sender] UAZAPI message sent, ID:', whatsappMessageId);
 
   // Atualizar ou criar registro da mensagem
   await updateMessageRecord(supabase, queueItem, whatsappMessageId);
@@ -487,7 +478,7 @@ async function updateMessageRecord(supabase: any, queueItem: any, whatsappMessag
       console.error('[Sender] Error updating message record:', msgError);
     }
   } else {
-    // INSERT new message (for Nina messages)
+    // INSERT new message (for Sofia messages)
     console.log('[Sender] Creating new message record');
     const { error: msgError } = await supabase
       .from('messages')

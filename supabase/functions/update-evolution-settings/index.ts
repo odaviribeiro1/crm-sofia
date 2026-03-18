@@ -25,7 +25,6 @@ serve(async (req) => {
       });
     }
 
-    // Buscar dados da instância
     const { data: instance, error: instanceError } = await supabase
       .from('whatsapp_instances')
       .select('instance_name, provider_type')
@@ -39,7 +38,6 @@ serve(async (req) => {
       });
     }
 
-    // Buscar secrets da instância
     const { data: secrets, error: secretsError } = await supabase
       .from('whatsapp_instance_secrets')
       .select('api_url, api_key')
@@ -55,73 +53,76 @@ serve(async (req) => {
 
     const baseUrl = secrets.api_url.replace(/\/$/, '');
 
-    // Chamar Evolution API: POST /settings/set/{instance_name}
+    // UAZAPI: Atualizar configurações da instância
+    // Nota: A UAZAPI pode usar endpoint diferente para settings - ajustar conforme documentação
     const payload = {
       rejectCall: reject_call ?? false,
       msgCall: reject_call ? (msg_call ?? '') : '',
       groupsIgnore: groups_ignore,
       alwaysOnline: always_online ?? false,
       readMessages: read_messages ?? false,
-      readStatus: false,
-      syncFullHistory: false,
     };
 
-    console.log(`[update-evolution-settings] Updating settings for ${instance.instance_name}:`, payload);
+    console.log(`[update-uazapi-settings] Updating settings for ${instance.instance_name}:`, payload);
 
-    const res = await fetch(`${baseUrl}/settings/set/${instance.instance_name}`, {
+    // Tentar atualizar settings via UAZAPI
+    const res = await fetch(`${baseUrl}/instance/settings`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': secrets.api_key,
+        'token': secrets.api_key,
       },
       body: JSON.stringify(payload),
     });
 
     const resText = await res.text();
-    console.log(`[update-evolution-settings] Response (${res.status}): ${resText.substring(0, 300)}`);
+    console.log(`[update-uazapi-settings] Response (${res.status}): ${resText.substring(0, 300)}`);
 
     if (!res.ok) {
       return new Response(JSON.stringify({
         success: false,
-        error: `Evolution API respondeu ${res.status}: ${resText.substring(0, 200)}`,
+        error: `UAZAPI respondeu ${res.status}: ${resText.substring(0, 200)}`,
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    // Se webhook_enabled foi explicitamente passado, atualizar o webhook na Evolution API
+    // Se webhook_enabled foi explicitamente passado, atualizar o webhook na UAZAPI
     if (webhook_enabled !== undefined) {
-      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
       const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
 
-      const webhookPayload = {
-        webhook: {
-          enabled: webhook_enabled,
-          url: webhookUrl,
-          webhook_by_events: false,
-          webhook_base64: false,
-          events: ['MESSAGES_UPSERT', 'MESSAGES_UPDATE', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'],
-        },
-      };
+      console.log(`[update-uazapi-settings] Updating webhook for ${instance.instance_name}: enabled=${webhook_enabled}`);
 
-      console.log(`[update-evolution-settings] Updating webhook for ${instance.instance_name}: enabled=${webhook_enabled}`);
+      if (webhook_enabled) {
+        const webhookRes = await fetch(`${baseUrl}/webhook/set`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': secrets.api_key,
+          },
+          body: JSON.stringify({
+            url: webhookUrl,
+          }),
+        });
 
-      const webhookRes = await fetch(`${baseUrl}/webhook/set/${instance.instance_name}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': secrets.api_key,
-        },
-        body: JSON.stringify(webhookPayload),
-      });
+        const webhookText = await webhookRes.text();
+        console.log(`[update-uazapi-settings] Webhook response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
 
-      const webhookText = await webhookRes.text();
-      console.log(`[update-evolution-settings] Webhook response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
-
-      if (!webhookRes.ok) {
-        // Non-fatal: log but continue
-        console.warn(`[update-evolution-settings] Webhook update failed: ${webhookText.substring(0, 200)}`);
+        if (!webhookRes.ok) {
+          console.warn(`[update-uazapi-settings] Webhook update failed: ${webhookText.substring(0, 200)}`);
+        }
+      } else {
+        // Deletar webhook
+        const webhookRes = await fetch(`${baseUrl}/webhook/delete`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'token': secrets.api_key,
+          },
+        });
+        const webhookText = await webhookRes.text();
+        console.log(`[update-uazapi-settings] Webhook delete response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
       }
     }
 
@@ -130,7 +131,7 @@ serve(async (req) => {
     });
 
   } catch (error: unknown) {
-    console.error('[update-evolution-settings] Error:', error);
+    console.error('[update-uazapi-settings] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ success: false, error: message }), {
       status: 500,

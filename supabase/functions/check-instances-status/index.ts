@@ -18,7 +18,7 @@ serve(async (req) => {
   const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
   try {
-    // Buscar todas as instâncias Evolution ativas
+    // Buscar todas as instâncias UAZAPI ativas
     const { data: instances, error: instancesError } = await supabase
       .from('whatsapp_instances')
       .select('id, instance_name, instance_id_external, provider_type, status')
@@ -35,7 +35,6 @@ serve(async (req) => {
 
     for (const instance of instances || []) {
       try {
-        // Buscar secrets da instância
         const { data: secrets } = await supabase
           .from('whatsapp_instance_secrets')
           .select('api_url, api_key')
@@ -48,19 +47,14 @@ serve(async (req) => {
           continue;
         }
 
-        // Determinar identificador correto
-        const instanceIdentifier = instance.provider_type === 'evolution_cloud' && instance.instance_id_external
-          ? instance.instance_id_external
-          : instance.instance_name;
-
-        // Verificar status via API
+        // Verificar status via UAZAPI
         const response = await fetch(
-          `${secrets.api_url.replace(/\/$/, '')}/instance/connectionState/${instanceIdentifier}`,
+          `${secrets.api_url.replace(/\/$/, '')}/instance/status`,
           {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
-              'apikey': secrets.api_key,
+              'token': secrets.api_key,
             },
           }
         );
@@ -69,7 +63,7 @@ serve(async (req) => {
         
         if (response.ok) {
           const data = await response.json();
-          const state = data?.state || data?.instance?.state || data?.connection;
+          const state = data?.status || data?.state || data?.connection;
           
           switch (state) {
             case 'open':
@@ -86,7 +80,6 @@ serve(async (req) => {
           }
         }
 
-        // Atualizar status se mudou
         if (newStatus !== instance.status) {
           await supabase
             .from('whatsapp_instances')

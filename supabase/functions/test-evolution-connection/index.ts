@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  console.log(`[test-evolution-connection] Received ${req.method} request`);
+  console.log(`[test-uazapi-connection] Received ${req.method} request`);
 
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -26,24 +26,23 @@ serve(async (req) => {
     const baseUrl = api_url.replace(/\/$/, '');
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-      'apikey': api_key,
+      'admintoken': api_key,
     };
 
-    // Primary health check: GET /instance/fetchInstances
-    // An empty array [] = valid credentials, API is up
-    const fetchUrl = `${baseUrl}/instance/fetchInstances`;
-    console.log(`[test-evolution-connection] Health check: ${fetchUrl}`);
+    // Health check: tentar listar instâncias com admintoken
+    const fetchUrl = `${baseUrl}/instance/list`;
+    console.log(`[test-uazapi-connection] Health check: ${fetchUrl}`);
 
     const response = await fetch(fetchUrl, { method: 'GET', headers });
     const responseText = await response.text();
 
-    console.log(`[test-evolution-connection] Status: ${response.status}`);
-    console.log(`[test-evolution-connection] Response: ${responseText.substring(0, 300)}`);
+    console.log(`[test-uazapi-connection] Status: ${response.status}`);
+    console.log(`[test-uazapi-connection] Response: ${responseText.substring(0, 300)}`);
 
     if (response.status === 401 || response.status === 403) {
       return new Response(JSON.stringify({
         success: false,
-        error: 'API Key inválida ou sem permissão. Verifique suas credenciais.',
+        error: 'Token inválido ou sem permissão. Verifique suas credenciais.',
         status: response.status,
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -58,16 +57,15 @@ serve(async (req) => {
         success: true,
         connected: true,
         instances_count: Array.isArray(instances) ? instances.length : 0,
-        message: 'Evolution API acessível e credenciais válidas!',
+        message: 'UAZAPI acessível e credenciais válidas!',
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Any other non-2xx: report generic connection error
     return new Response(JSON.stringify({
       success: false,
-      error: `Servidor retornou status ${response.status}. Verifique a URL da Evolution API.`,
+      error: `Servidor retornou status ${response.status}. Verifique a URL da UAZAPI.`,
       status: response.status,
       details: responseText.substring(0, 300),
     }), {
@@ -75,7 +73,7 @@ serve(async (req) => {
     });
 
   } catch (error: unknown) {
-    console.error('[test-evolution-connection] Error:', error);
+    console.error('[test-uazapi-connection] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({
       success: false,

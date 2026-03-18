@@ -478,7 +478,7 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
           contact_id: data.contact_id,
           conversation_id: data.conversation_id,
           message_id: data.message_id,
-          queued_for_nina: data.queued_for_nina
+          queued_for_sofia: data.queued_for_nina
         });
         toast.success('Áudio simulado com sucesso!', {
           description: `Transcrição: "${data.transcription?.substring(0, 50)}..."`

@@ -104,7 +104,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
               onEvolutionApiUrlChange(e.target.value);
               setTestResult(null);
             }}
-            placeholder="https://sua-evolution-api.com"
+            placeholder="https://api.uazapi.com"
             className="font-mono text-sm"
           />
         </motion.div>

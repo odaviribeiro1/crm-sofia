@@ -145,7 +145,7 @@ export function useWhatsAppInstances() {
 
   const deleteInstance = useMutation({
     mutationFn: async (id: string) => {
-      // Chama a edge function que deleta na Evolution API e faz soft delete no banco
+      // Chama a edge function que deleta na UAZAPI e faz soft delete no banco
       const { data, error } = await supabase.functions.invoke('delete-evolution-instance', {
         body: { instance_id: id },
       });

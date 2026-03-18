@@ -191,7 +191,7 @@ const DEFAULT_NINA_SETTINGS = {
   ai_scheduling_enabled: true,
   route_all_to_receiver_enabled: false,
   company_name: 'Empresa X',
-  sdr_name: 'Nina',
+  sdr_name: 'Sofia',
   system_prompt_override: DEFAULT_SYSTEM_PROMPT,
 };
 

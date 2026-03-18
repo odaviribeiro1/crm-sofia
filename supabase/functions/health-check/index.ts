@@ -107,8 +107,8 @@ Deno.serve(async (req) => {
         message: 'Configurações não encontradas. Execute o onboarding.',
       });
     } else {
-      // Check WhatsApp configuration (Evolution API)
-      const evolutionConfigured = !!(
+      // Check WhatsApp configuration (UAZAPI)
+      const uazapiConfigured = !!(
         settings.evolution_api_url &&
         settings.evolution_api_key
       );

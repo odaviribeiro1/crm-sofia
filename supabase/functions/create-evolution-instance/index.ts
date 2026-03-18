@@ -6,6 +6,54 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+const parseJsonSafe = (input: string) => {
+  try {
+    return JSON.parse(input);
+  } catch {
+    return null;
+  }
+};
+
+const extractStatus = (payload: any): string => {
+  const candidates = [
+    payload?.status,
+    payload?.state,
+    payload?.connection,
+    payload?.instance?.status,
+    payload?.instance?.state,
+    payload?.data?.status,
+    payload?.data?.state,
+  ];
+
+  const status = candidates.find((v) => typeof v === 'string' && v.trim().length > 0);
+  return status ? String(status).toLowerCase() : 'disconnected';
+};
+
+const isConnectedStatus = (status: string): boolean => {
+  const normalized = status.toLowerCase();
+  return normalized === 'connected' || normalized === 'open';
+};
+
+const extractQrCode = (payload: any): string | null => {
+  const candidates = [
+    payload?.qrCode,
+    payload?.qrcode,
+    payload?.base64,
+    payload?.qrcode?.base64,
+    payload?.instance?.qrCode,
+    payload?.instance?.qrcode,
+    payload?.instance?.base64,
+    payload?.instance?.qrcode?.base64,
+    payload?.data?.qrCode,
+    payload?.data?.qrcode,
+    payload?.data?.base64,
+    payload?.data?.qrcode?.base64,
+  ];
+
+  const qr = candidates.find((v) => typeof v === 'string' && v.trim().length > 0);
+  return qr ? String(qr) : null;
+};
+
 serve(async (req) => {
   console.log(`[create-uazapi-instance] Received ${req.method} request`);
 
@@ -28,23 +76,32 @@ serve(async (req) => {
     }
 
     const baseUrl = api_url.replace(/\/$/, '');
+    const adminToken = String(api_key).trim();
 
-    // 1. Criar instância na UAZAPI - AdminToken via header, body com "Name"
+    const adminHeaders = {
+      'Content-Type': 'application/json',
+      admintoken: adminToken,
+      AdminToken: adminToken,
+    };
+
+    const buildAdminUrl = (path: string) => {
+      const url = new URL(`${baseUrl}${path}`);
+      url.searchParams.set('admintoken', adminToken);
+      return url.toString();
+    };
+
+    // 1. Criar instância na UAZAPI
     console.log(`[create-uazapi-instance] Creating instance: ${instance_name} at ${baseUrl}`);
-    const createRes = await fetch(`${baseUrl}/instance/init`, {
+    const createRes = await fetch(buildAdminUrl('/instance/init'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'AdminToken': api_key,
-      },
-      body: JSON.stringify({ Name: instance_name }),
+      headers: adminHeaders,
+      body: JSON.stringify({ Name: instance_name, name: instance_name }),
     });
 
     const createText = await createRes.text();
     console.log(`[create-uazapi-instance] Create response (${createRes.status}): ${createText.substring(0, 500)}`);
 
-    let createData: any = {};
-    try { createData = JSON.parse(createText); } catch {}
+    const createData = parseJsonSafe(createText) ?? {};
 
     if (!createRes.ok && createRes.status !== 200 && createRes.status !== 201) {
       return new Response(JSON.stringify({
@@ -58,27 +115,69 @@ serve(async (req) => {
     }
 
     // Extrair token da instância
-    const instanceToken = createData?.token || createData?.instance?.token || api_key;
+    const instanceToken = [
+      createData?.token,
+      createData?.instance?.token,
+      createData?.data?.token,
+    ].find((v) => typeof v === 'string' && v.trim().length > 0);
+
+    if (!instanceToken) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'UAZAPI não retornou token da instância recém-criada',
+        details: createText,
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const tokenHeaders = {
+      'Content-Type': 'application/json',
+      token: instanceToken,
+      Token: instanceToken,
+    };
+
+    const buildTokenUrl = (path: string) => {
+      const url = new URL(`${baseUrl}${path}`);
+      url.searchParams.set('token', instanceToken);
+      return url.toString();
+    };
 
     // 2. Buscar QR Code
-    let qrCode: string | null = null;
-    qrCode = createData?.qrCode || createData?.qrcode?.base64 || createData?.base64 || null;
+    let qrCode: string | null = extractQrCode(createData);
+    let connected = isConnectedStatus(extractStatus(createData));
 
-    if (!qrCode) {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+    if (!qrCode && !connected) {
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const qrRes = await fetch(`${baseUrl}/instance/qr`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json', 'Token': instanceToken },
+      // UAZAPI v2: /instance/connect devolve QR
+      const connectRes = await fetch(buildTokenUrl('/instance/connect'), {
+        method: 'POST',
+        headers: tokenHeaders,
+        body: JSON.stringify({}),
       });
 
-      if (qrRes.ok) {
+      const connectText = await connectRes.text();
+      console.log(`[create-uazapi-instance] Connect response (${connectRes.status}): ${connectText.substring(0, 300)}`);
+      const connectData = parseJsonSafe(connectText);
+
+      qrCode = qrCode || extractQrCode(connectData);
+      connected = connected || isConnectedStatus(extractStatus(connectData));
+
+      // Fallback legado
+      if (!qrCode && !connected) {
+        const qrRes = await fetch(buildTokenUrl('/instance/qr'), {
+          method: 'GET',
+          headers: tokenHeaders,
+        });
+
         const qrText = await qrRes.text();
-        console.log(`[create-uazapi-instance] QR response: ${qrText.substring(0, 200)}`);
-        try {
-          const qrData = JSON.parse(qrText);
-          qrCode = qrData?.qrCode || qrData?.base64 || qrData?.qrcode?.base64 || null;
-        } catch {}
+        console.log(`[create-uazapi-instance] QR fallback (${qrRes.status}): ${qrText.substring(0, 200)}`);
+        const qrData = parseJsonSafe(qrText);
+
+        qrCode = extractQrCode(qrData);
+        connected = isConnectedStatus(extractStatus(qrData));
       }
     }
 
@@ -89,8 +188,8 @@ serve(async (req) => {
         name,
         instance_name,
         provider_type: 'evolution_self_hosted',
-        status: qrCode ? 'qr_required' : 'disconnected',
-        qr_code: qrCode,
+        status: connected ? 'connected' : (qrCode ? 'qr_required' : 'disconnected'),
+        qr_code: connected ? null : qrCode,
         is_default: is_default ?? false,
         is_active: true,
       })
@@ -105,7 +204,7 @@ serve(async (req) => {
       });
     }
 
-    // 4. Salvar secrets
+    // 4. Salvar secrets (sempre token da instância)
     const { error: secretsError } = await supabase
       .from('whatsapp_instance_secrets')
       .insert({
@@ -122,12 +221,12 @@ serve(async (req) => {
       });
     }
 
-    // 5. Configurar webhook
+    // 5. Configurar webhook (não bloqueante)
     const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
     try {
-      const webhookRes = await fetch(`${baseUrl}/webhook/set`, {
+      const webhookRes = await fetch(buildTokenUrl('/webhook/set'), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Token': instanceToken },
+        headers: tokenHeaders,
         body: JSON.stringify({ url: webhookUrl }),
       });
       const webhookText = await webhookRes.text();
@@ -139,8 +238,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       instance_id: instance.id,
-      qr_code: qrCode,
-      status: instance.status,
+      qr_code: connected ? null : qrCode,
+      status: connected ? 'connected' : (qrCode ? 'qr_required' : 'disconnected'),
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

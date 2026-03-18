@@ -17,7 +17,7 @@ serve(async (req) => {
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     
-    // Call the nina-orchestrator function
+    // Call the sofia orchestrator (nina-orchestrator) function
     const response = await fetch(`${supabaseUrl}/functions/v1/nina-orchestrator`, {
       method: 'POST',
       headers: {

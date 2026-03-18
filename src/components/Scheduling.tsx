@@ -464,7 +464,7 @@ const Scheduling: React.FC = () => {
                                     >
                                         <div>
                                             <div className="font-bold text-sm flex items-center gap-1.5">
-                                                {app.metadata?.source === 'nina_ai' && (
+                                                {app.metadata?.source === 'sofia_ai' && (
                                                   <Bot className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                                                 )}
                                                 {app.title}

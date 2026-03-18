@@ -149,10 +149,10 @@ serve(async (req) => {
 });
 
 // ========================================
-// EVOLUTION API SENDER
+// UAZAPI SENDER
 // ========================================
-async function sendViaEvolution(supabase: any, queueItem: any, secretsCache: Record<string, any>) {
-  console.log(`[Sender] Sending via Evolution API: ${queueItem.id}`);
+async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record<string, any>) {
+  console.log(`[Sender] Sending via UAZAPI: ${queueItem.id}`);
 
   // Buscar instância
   const { data: instance, error: instanceError } = await supabase

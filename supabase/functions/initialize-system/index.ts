@@ -190,7 +190,7 @@ const DEFAULT_NINA_SETTINGS = {
   adaptive_response_enabled: true,
   ai_scheduling_enabled: true,
   route_all_to_receiver_enabled: false,
-  company_name: 'Viver de IA',
+  company_name: 'Empresa X',
   sdr_name: 'Nina',
   system_prompt_override: DEFAULT_SYSTEM_PROMPT,
 };

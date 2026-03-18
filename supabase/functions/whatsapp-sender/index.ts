@@ -478,7 +478,7 @@ async function updateMessageRecord(supabase: any, queueItem: any, whatsappMessag
       console.error('[Sender] Error updating message record:', msgError);
     }
   } else {
-    // INSERT new message (for Nina messages)
+    // INSERT new message (for Sofia messages)
     console.log('[Sender] Creating new message record');
     const { error: msgError } = await supabase
       .from('messages')

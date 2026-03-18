@@ -256,8 +256,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
           elevenlabs_speed: settings.elevenlabs_speed,
           elevenlabs_speaker_boost: settings.elevenlabs_speaker_boost,
           audio_response_enabled: settings.audio_response_enabled,
-          evolution_api_url: settings.evolution_api_url,
-          evolution_api_key: settings.evolution_api_key,
+          evolution_api_url: settings.uazapi_url,
+          evolution_api_key: settings.uazapi_key,
           updated_at: new Date().toISOString(),
         } as any)
         .eq('id', settings.id!);

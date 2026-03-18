@@ -100,7 +100,7 @@ Agendamentos:
 - Após agendar, confirme os detalhes com o lead.
 
 Trigger para oferecer agendamento:
-- Lead demonstrou interesse claro no Viver de IA
+- Lead demonstrou interesse claro na Empresa X
 - Lead atende critérios de qualificação
 - Momento natural da conversa (não force)
 </tool_usage_protocol>

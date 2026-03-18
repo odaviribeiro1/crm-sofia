@@ -99,7 +99,7 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     contact_id: string;
     conversation_id: string;
     message_id: string;
-    queued_for_nina: boolean;
+    queued_for_sofia: boolean;
   } | null>(null);
   const audioFileInputRef = useRef<HTMLInputElement>(null);
   

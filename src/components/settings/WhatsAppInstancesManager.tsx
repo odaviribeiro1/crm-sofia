@@ -174,7 +174,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
 
       if (error) throw error;
 
-      // 2. Sincronizar com Evolution API (apenas instâncias Evolution)
+      // 2. Sincronizar com UAZAPI (apenas instâncias UAZAPI)
       if (settingsInstance.provider_type !== 'official') {
         const { error: fnError } = await supabase.functions.invoke('update-evolution-settings', {
           body: {

@@ -219,7 +219,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
               <div className="flex items-center gap-2 p-3 rounded-lg border border-border bg-muted/40">
                 <CheckCircle className="w-4 h-4 text-primary shrink-0" />
                 <div className="text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">Evolution API configurada</span>
+                  <span className="font-medium text-foreground">UAZAPI configurada</span>
                   <br />
                   {evolutionApiUrl}
                 </div>

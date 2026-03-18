@@ -133,9 +133,9 @@ async function processMessageUpsert(
   const fromMe = messageData.key.fromMe;
   const messageId = messageData.key.id;
   
-  // Mensagens enviadas por nós (fromMe=true): salvar no chat mas NÃO processar pela Nina
+  // Mensagens enviadas por nós (fromMe=true): salvar no chat mas NÃO processar pela Sofia
   if (fromMe) {
-    console.log('[evolution-webhook] Outgoing message (fromMe=true) - saving to chat without Nina processing');
+    console.log('[evolution-webhook] Outgoing message (fromMe=true) - saving to chat without Sofia processing');
     await saveOutgoingMessage(messageData, instance, supabase);
     return;
   }

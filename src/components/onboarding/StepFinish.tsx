@@ -88,7 +88,7 @@ export const StepFinish: React.FC<StepFinishProps> = ({
     } else if (companyName) {
       return `Olá! Aqui é o assistente da ${companyName}. Este é um teste do sistema! 🚀`;
     }
-    return 'Olá! Este é um teste do sistema Nina SDR! 🚀';
+    return 'Olá! Este é um teste do sistema Sofia SDR! 🚀';
   };
   
   const [testMessage, setTestMessage] = useState(getDefaultTestMessage);

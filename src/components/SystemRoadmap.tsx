@@ -2351,7 +2351,7 @@ const transformConversation = (dbConv: DBConversation): UIConversation => {
                     <div>
                       <p className="text-xs font-bold text-pink-400 mb-2">Agendamento</p>
                       <ul className="text-sm text-slate-300 space-y-1 pl-4">
-                        <li className="text-xs">✅ Agendamento é <strong>nativo</strong> via Nina (create/reschedule/cancel)</li>
+                        <li className="text-xs">✅ Agendamento é <strong>nativo</strong> via Sofia (create/reschedule/cancel)</li>
                         <li className="text-xs">Dados salvos na tabela <code>appointments</code></li>
                       </ul>
                     </div>

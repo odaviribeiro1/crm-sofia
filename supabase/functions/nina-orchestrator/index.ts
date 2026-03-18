@@ -217,9 +217,9 @@ serve(async (req) => {
           console.log('[Nina] No settings found in database, using hardcoded defaults');
         }
 
-        // Check if Nina is active for this user
+        // Check if Sofia is active for this user
         if (!effectiveSettings.is_active) {
-          console.log('[Nina] Nina is disabled for user:', conversation.user_id);
+          console.log('[Sofia] Sofia is disabled for user:', conversation.user_id);
           await supabase
             .from('nina_processing_queue')
             .update({ 

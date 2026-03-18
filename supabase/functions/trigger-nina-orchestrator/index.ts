@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 // This is a trigger function that can be called by cron jobs or pg_net
-// It simply calls the nina-orchestrator function
+// It simply calls the sofia-orchestrator (nina-orchestrator) function
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });

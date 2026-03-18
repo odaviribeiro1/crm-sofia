@@ -62,7 +62,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
   const handleCreate = async () => {
     if (!validate()) return;
     if (!credentialsConfigured) {
-      toast.error('Configure e salve a URL e API Key da Evolution antes de continuar');
+      toast.error('Configure e salve a URL e API Key da UAZAPI antes de continuar');
       return;
     }
 

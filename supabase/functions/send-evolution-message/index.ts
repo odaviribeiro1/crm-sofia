@@ -9,15 +9,11 @@ const corsHeaders = {
 async function fetchWithRetry(url: string, options: RequestInit, retries = 3): Promise<Response> {
   for (let attempt = 0; attempt < retries; attempt++) {
     try {
-      console.log(`[send-uazapi-message] Attempt ${attempt + 1}/${retries} to ${url}`);
-      const response = await fetch(url, options);
-      return response;
+      console.log(`[send-uazapi-message] Attempt ${attempt + 1}/${retries}`);
+      return await fetch(url, options);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      console.log(`[send-uazapi-message] Attempt ${attempt + 1} failed: ${errorMessage}`);
       if (attempt === retries - 1) throw error;
-      const delay = 1000 * Math.pow(2, attempt);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise(resolve => setTimeout(resolve, 1000 * Math.pow(2, attempt)));
     }
   }
   throw new Error('All retries failed');
@@ -58,16 +54,14 @@ serve(async (req) => {
     const body: SendMessageRequest = await req.json();
     const { instance_id, phone_number, content, message_type = 'text', media_url, file_name } = body;
 
-    console.log(`[send-uazapi-message] Sending ${message_type} to ${phone_number} via instance ${instance_id}`);
-
     const { data: instance, error: instanceError } = await supabase
       .from('whatsapp_instances')
-      .select('id, instance_name, instance_id_external, provider_type, status')
+      .select('id, instance_name, status')
       .eq('id', instance_id)
       .single();
 
     if (instanceError || !instance) throw new Error('Instance not found');
-    if (instance.status !== 'connected') throw new Error(`Instance is not connected. Status: ${instance.status}`);
+    if (instance.status !== 'connected') throw new Error(`Instance not connected: ${instance.status}`);
 
     const { data: secrets, error: secretsError } = await supabase
       .from('whatsapp_instance_secrets')
@@ -79,37 +73,35 @@ serve(async (req) => {
 
     const formattedNumber = normalizeBrazilianPhone(phone_number) ?? phone_number.replace(/\D/g, '');
     const baseUrl = secrets.api_url.replace(/\/$/, '');
-    const tokenParam = `token=${encodeURIComponent(secrets.api_key)}`;
+    const instanceHeaders = { 'Content-Type': 'application/json', 'Token': secrets.api_key };
 
     let endpoint: string;
     let payload: any;
 
     switch (message_type) {
       case 'text':
-        endpoint = `${baseUrl}/send/text?${tokenParam}`;
+        endpoint = `${baseUrl}/send/text`;
         payload = { number: formattedNumber, text: content };
         break;
       case 'audio':
-        endpoint = `${baseUrl}/send/audio?${tokenParam}`;
+        endpoint = `${baseUrl}/send/audio`;
         payload = { number: formattedNumber, audio: media_url };
         break;
       case 'image':
-        endpoint = `${baseUrl}/send/media?${tokenParam}`;
+        endpoint = `${baseUrl}/send/media`;
         payload = { number: formattedNumber, mediatype: 'image', media: media_url, caption: content || '' };
         break;
       case 'document':
-        endpoint = `${baseUrl}/send/media?${tokenParam}`;
+        endpoint = `${baseUrl}/send/media`;
         payload = { number: formattedNumber, mediatype: 'document', media: media_url, caption: content || '', fileName: file_name || 'document' };
         break;
       default:
         throw new Error(`Unsupported message type: ${message_type}`);
     }
 
-    console.log(`[send-uazapi-message] Sending to: ${baseUrl}/send/...`);
-
     const response = await fetchWithRetry(endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: instanceHeaders,
       body: JSON.stringify(payload),
     });
 
@@ -131,8 +123,7 @@ serve(async (req) => {
     console.error('[send-uazapi-message] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ success: false, error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });

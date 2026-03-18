@@ -29,14 +29,15 @@ serve(async (req) => {
 
     const baseUrl = api_url.replace(/\/$/, '');
 
-    // 1. Criar a instância na UAZAPI - auth via query string, body com "Name"
+    // 1. Criar instância na UAZAPI - AdminToken via header, body com "Name"
     console.log(`[create-uazapi-instance] Creating instance: ${instance_name} at ${baseUrl}`);
-    const createRes = await fetch(`${baseUrl}/instance/init?admintoken=${encodeURIComponent(api_key)}`, {
+    const createRes = await fetch(`${baseUrl}/instance/init`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        Name: instance_name,
-      }),
+      headers: {
+        'Content-Type': 'application/json',
+        'AdminToken': api_key,
+      },
+      body: JSON.stringify({ Name: instance_name }),
     });
 
     const createText = await createRes.text();
@@ -56,22 +57,19 @@ serve(async (req) => {
       });
     }
 
-    // Extrair token da instância do retorno da criação
+    // Extrair token da instância
     const instanceToken = createData?.token || createData?.instance?.token || api_key;
 
     // 2. Buscar QR Code
     let qrCode: string | null = null;
-
-    // Tenta extrair QR do retorno da criação
     qrCode = createData?.qrCode || createData?.qrcode?.base64 || createData?.base64 || null;
 
     if (!qrCode) {
-      // Aguardar um momento e buscar QR Code separadamente
       await new Promise(resolve => setTimeout(resolve, 1500));
 
-      const qrRes = await fetch(`${baseUrl}/instance/qr?token=${encodeURIComponent(instanceToken)}`, {
+      const qrRes = await fetch(`${baseUrl}/instance/qr`, {
         method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Token': instanceToken },
       });
 
       if (qrRes.ok) {
@@ -107,7 +105,7 @@ serve(async (req) => {
       });
     }
 
-    // 4. Salvar secrets (usa instanceToken se disponível)
+    // 4. Salvar secrets
     const { error: secretsError } = await supabase
       .from('whatsapp_instance_secrets')
       .insert({
@@ -117,7 +115,6 @@ serve(async (req) => {
       });
 
     if (secretsError) {
-      // Rollback
       await supabase.from('whatsapp_instances').delete().eq('id', instance.id);
       return new Response(JSON.stringify({ success: false, error: secretsError.message }), {
         status: 500,
@@ -125,12 +122,12 @@ serve(async (req) => {
       });
     }
 
-    // 5. Configurar webhook automaticamente - auth via query string
+    // 5. Configurar webhook
     const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
     try {
-      const webhookRes = await fetch(`${baseUrl}/webhook/set?token=${encodeURIComponent(instanceToken)}`, {
+      const webhookRes = await fetch(`${baseUrl}/webhook/set`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Token': instanceToken },
         body: JSON.stringify({ url: webhookUrl }),
       });
       const webhookText = await webhookRes.text();

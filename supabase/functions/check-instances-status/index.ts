@@ -27,7 +27,6 @@ serve(async (req) => {
     if (instancesError) throw instancesError;
 
     console.log(`[check-instances-status] Found ${instances?.length || 0} instances to check`);
-
     const results = [];
 
     for (const instance of instances || []) {
@@ -43,29 +42,21 @@ serve(async (req) => {
           continue;
         }
 
-        // UAZAPI: auth via query string
         const baseUrl = secrets.api_url.replace(/\/$/, '');
-        const response = await fetch(
-          `${baseUrl}/instance/status?token=${encodeURIComponent(secrets.api_key)}`,
-          { method: 'GET', headers: { 'Content-Type': 'application/json' } }
-        );
+        // UAZAPI: Token via header para endpoints de instância
+        const response = await fetch(`${baseUrl}/instance/status`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json', 'Token': secrets.api_key },
+        });
 
         let newStatus = 'disconnected';
-        
         if (response.ok) {
           const data = await response.json();
           const state = data?.status || data?.state || data?.connection;
-          
           switch (state) {
-            case 'open':
-            case 'connected':
-              newStatus = 'connected';
-              break;
-            case 'connecting':
-              newStatus = 'connecting';
-              break;
-            default:
-              newStatus = 'disconnected';
+            case 'open': case 'connected': newStatus = 'connected'; break;
+            case 'connecting': newStatus = 'connecting'; break;
+            default: newStatus = 'disconnected';
           }
         }
 
@@ -91,8 +82,7 @@ serve(async (req) => {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ success: false, error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   }
 });

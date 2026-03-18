@@ -20,41 +20,31 @@ serve(async (req) => {
 
     if (!instance_id || groups_ignore === undefined) {
       return new Response(JSON.stringify({ success: false, error: 'Campos obrigatórios: instance_id, groups_ignore' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const { data: instance, error: instanceError } = await supabase
-      .from('whatsapp_instances')
-      .select('instance_name, provider_type')
-      .eq('id', instance_id)
-      .single();
+      .from('whatsapp_instances').select('instance_name, provider_type').eq('id', instance_id).single();
 
     if (instanceError || !instance) {
       return new Response(JSON.stringify({ success: false, error: 'Instância não encontrada' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const { data: secrets, error: secretsError } = await supabase
-      .from('whatsapp_instance_secrets')
-      .select('api_url, api_key')
-      .eq('instance_id', instance_id)
-      .single();
+      .from('whatsapp_instance_secrets').select('api_url, api_key').eq('instance_id', instance_id).single();
 
     if (secretsError || !secrets) {
       return new Response(JSON.stringify({ success: false, error: 'Credenciais da instância não encontradas' }), {
-        status: 404,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
     const baseUrl = secrets.api_url.replace(/\/$/, '');
-    const tokenParam = `token=${encodeURIComponent(secrets.api_key)}`;
+    const instanceHeaders = { 'Content-Type': 'application/json', 'Token': secrets.api_key };
 
-    // UAZAPI: Atualizar configurações da instância - auth via query string
     const payload = {
       rejectCall: reject_call ?? false,
       msgCall: reject_call ? (msg_call ?? '') : '',
@@ -65,9 +55,9 @@ serve(async (req) => {
 
     console.log(`[update-uazapi-settings] Updating settings for ${instance.instance_name}:`, payload);
 
-    const res = await fetch(`${baseUrl}/instance/settings?${tokenParam}`, {
+    const res = await fetch(`${baseUrl}/instance/settings`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: instanceHeaders,
       body: JSON.stringify(payload),
     });
 
@@ -76,31 +66,21 @@ serve(async (req) => {
 
     if (!res.ok) {
       return new Response(JSON.stringify({
-        success: false,
-        error: `UAZAPI respondeu ${res.status}: ${resText.substring(0, 200)}`,
-      }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+        success: false, error: `UAZAPI respondeu ${res.status}: ${resText.substring(0, 200)}`,
+      }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    // Se webhook_enabled foi explicitamente passado, atualizar o webhook
     if (webhook_enabled !== undefined) {
       const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
-      console.log(`[update-uazapi-settings] Updating webhook for ${instance.instance_name}: enabled=${webhook_enabled}`);
-
       if (webhook_enabled) {
-        const webhookRes = await fetch(`${baseUrl}/webhook/set?${tokenParam}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url: webhookUrl }),
+        const webhookRes = await fetch(`${baseUrl}/webhook/set`, {
+          method: 'POST', headers: instanceHeaders, body: JSON.stringify({ url: webhookUrl }),
         });
         const webhookText = await webhookRes.text();
         console.log(`[update-uazapi-settings] Webhook response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
       } else {
-        const webhookRes = await fetch(`${baseUrl}/webhook/delete?${tokenParam}`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
+        const webhookRes = await fetch(`${baseUrl}/webhook/delete`, {
+          method: 'DELETE', headers: instanceHeaders,
         });
         const webhookText = await webhookRes.text();
         console.log(`[update-uazapi-settings] Webhook delete response (${webhookRes.status}): ${webhookText.substring(0, 300)}`);
@@ -115,8 +95,7 @@ serve(async (req) => {
     console.error('[update-uazapi-settings] Error:', error);
     const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(JSON.stringify({ success: false, error: message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
 });

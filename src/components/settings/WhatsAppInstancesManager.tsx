@@ -226,7 +226,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
 
   const handleReconfigureWebhook = async (instance: WhatsAppInstance) => {
     if (!evolutionApiUrl || !evolutionApiKey) {
-      toast.error('URL e API Key da Evolution não configuradas');
+      toast.error('URL e API Key da UAZAPI não configuradas');
       return;
     }
     setReconfiguringWebhook(instance.id);

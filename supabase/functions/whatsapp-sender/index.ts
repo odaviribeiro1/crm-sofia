@@ -284,7 +284,7 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
   });
 
   const responseText = await response.text();
-  console.log(`[Sender] Evolution response: ${response.status} - ${responseText.substring(0, 300)}`);
+  console.log(`[Sender] UAZAPI response: ${response.status} - ${responseText.substring(0, 300)}`);
 
   if (!response.ok) {
     throw new Error(`Evolution API error: ${responseText}`);

@@ -235,20 +235,14 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
       const webhookUrl = `${supabaseUrl}/functions/v1/evolution-webhook`;
       const baseUrl = evolutionApiUrl.replace(/\/$/, '');
 
-      const res = await fetch(`${baseUrl}/webhook/set/${instance.instance_name}`, {
+      const res = await fetch(`${baseUrl}/webhook/set`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': evolutionApiKey,
+          'token': evolutionApiKey,
         },
         body: JSON.stringify({
-          webhook: {
-            enabled: true,
-            url: webhookUrl,
-            webhook_by_events: false,
-            webhook_base64: false,
-            events: ['MESSAGES_UPSERT', 'MESSAGES_UPDATE', 'CONNECTION_UPDATE', 'QRCODE_UPDATED'],
-          },
+          url: webhookUrl,
         }),
       });
 

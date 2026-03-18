@@ -1,6 +1,6 @@
 /**
  * Normalizes Brazilian phone numbers to E.164 format without the '+' sign,
- * as expected by Evolution API (e.g. "5511999998888").
+ * as expected by UAZAPI (e.g. "5511999998888").
  *
  * Handles all common Brazilian formats:
  *   "+55 (11) 9 9999-8888"  → "5511999998888"

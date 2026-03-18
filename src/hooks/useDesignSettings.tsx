@@ -19,8 +19,8 @@ interface DesignSettings {
 const DEFAULT_SETTINGS: DesignSettings = {
   logoUrl: null,
   primaryColor: '212 71% 44%',
-  sidebarBgColor: '220 13% 18%',
-  sidebarPrimaryColor: '220 9% 46%',
+  sidebarBgColor: '212 55% 16%',
+  sidebarPrimaryColor: '212 71% 44%',
   accentColor: '220 14% 96%',
   companyDisplayName: null,
   companySubtitle: null,

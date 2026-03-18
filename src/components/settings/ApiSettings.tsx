@@ -22,8 +22,8 @@ interface SofiaSettings {
   elevenlabs_speed: number | null;
   elevenlabs_speaker_boost: boolean;
   audio_response_enabled: boolean;
-  evolution_api_url: string | null;
-  evolution_api_key: string | null;
+  uazapi_url: string | null;
+  uazapi_key: string | null;
 }
 
 const VOICE_OPTIONS = [

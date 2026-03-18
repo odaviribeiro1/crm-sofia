@@ -266,22 +266,11 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
       presenceType = 'composing';
   }
 
-  // Enviar presence ("digitando..." ou "gravando...") antes da mensagem
-  const presenceNumber = isLid ? whatsappId : `${targetNumber}@s.whatsapp.net`;
+  // Enviar presence ("digitando..." ou "gravando...") antes da mensagem - UAZAPI pode não suportar esse endpoint
+  // Mantemos como non-fatal
   try {
-    const presenceUrl = `${secrets.api_url.replace(/\/$/, '')}/chat/sendPresence/${instanceIdentifier}`;
-    console.log(`[Sender] Sending presence '${presenceType}' to ${presenceNumber}`);
-    await fetch(presenceUrl, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({
-        number: presenceNumber,
-        delay: 3000,
-        presence: presenceType,
-      }),
-    });
-    // Aguardar um pouco para o "digitando" aparecer antes de enviar
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log(`[Sender] Skipping presence for UAZAPI (not supported in standard API)`);
+    await new Promise(resolve => setTimeout(resolve, 1000));
   } catch (presenceErr) {
     console.log('[Sender] Presence error (non-fatal):', presenceErr);
   }

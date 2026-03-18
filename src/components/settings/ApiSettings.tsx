@@ -8,7 +8,7 @@ import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useAuth } from '@/hooks/useAuth';
 import { WhatsAppInstancesManager } from './WhatsAppInstancesManager';
 
-interface NinaSettings {
+interface SofiaSettings {
   id?: string;
   whatsapp_access_token: string | null;
   whatsapp_phone_number_id: string | null;

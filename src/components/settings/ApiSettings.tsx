@@ -106,7 +106,7 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
   // Gera um verify token único para esta instalação
   const generateUniqueToken = () => `verify-${crypto.randomUUID().slice(0, 8)}`;
   
-  const [settings, setSettings] = useState<NinaSettings>({
+  const [settings, setSettings] = useState<SofiaSettings>({
     whatsapp_access_token: null,
     whatsapp_phone_number_id: null,
     whatsapp_verify_token: generateUniqueToken(),
@@ -119,8 +119,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     elevenlabs_speed: 1.0,
     elevenlabs_speaker_boost: true,
     audio_response_enabled: false,
-    evolution_api_url: null,
-    evolution_api_key: null,
+    uazapi_url: null,
+    uazapi_key: null,
   });
 
   // Auto-save ElevenLabs API key when field loses focus

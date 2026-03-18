@@ -271,7 +271,7 @@ const KnowledgeBase: React.FC = () => {
       </div>
 
       <p className="text-xs text-muted-foreground mb-4">
-        Adicione documentos e textos para a Nina usar como contexto nas conversas. 
+        Adicione documentos e textos para a Sofia usar como contexto nas conversas. 
         O conteúdo será indexado automaticamente com busca semântica (RAG).
       </p>
 

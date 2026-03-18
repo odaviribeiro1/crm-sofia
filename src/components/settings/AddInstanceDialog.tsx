@@ -179,7 +179,7 @@ export function AddInstanceDialog({ open, onOpenChange, evolutionApiUrl, evoluti
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Nova Instância WhatsApp</DialogTitle>
-          <DialogDescription>Conecte um número via Evolution API</DialogDescription>
+          <DialogDescription>Conecte um número via UAZAPI</DialogDescription>
         </DialogHeader>
 
         {/* Step indicator */}

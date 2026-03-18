@@ -719,7 +719,7 @@ const Scheduling: React.FC = () => {
                                 <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase border ${getEventTypeColor(selectedAppointment.type)}`}>
                                     {selectedAppointment.type}
                                 </span>
-                                {selectedAppointment.metadata?.source === 'nina_ai' && (
+                                {selectedAppointment.metadata?.source === 'sofia_ai' && (
                                     <span className="px-2 py-1 rounded text-[10px] font-bold uppercase border bg-primary/10 text-primary border-primary/30 flex items-center gap-1">
                                         <Bot className="w-3 h-3" />
                                         Criado por IA

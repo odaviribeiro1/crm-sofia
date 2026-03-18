@@ -221,8 +221,8 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
         elevenlabs_speed: data.elevenlabs_speed,
         elevenlabs_speaker_boost: data.elevenlabs_speaker_boost,
         audio_response_enabled: data.audio_response_enabled || false,
-        evolution_api_url: (data as any).evolution_api_url ?? null,
-        evolution_api_key: (data as any).evolution_api_key ?? null,
+        uazapi_url: (data as any).evolution_api_url ?? null,
+        uazapi_key: (data as any).evolution_api_key ?? null,
       });
     } catch (error) {
       console.error('[ApiSettings] Error loading settings:', error);

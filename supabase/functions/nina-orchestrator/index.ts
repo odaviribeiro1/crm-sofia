@@ -225,7 +225,7 @@ serve(async (req) => {
             .update({ 
               status: 'completed', 
               processed_at: new Date().toISOString(),
-              error_message: 'Nina disabled for this user'
+              error_message: 'Sofia disabled for this user'
             })
             .eq('id', item.id);
           continue;

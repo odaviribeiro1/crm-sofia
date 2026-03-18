@@ -280,18 +280,18 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
     setTimeout(() => setCopiedWebhook(false), 2000);
   };
 
-  const handleTestEvolutionConnection = async () => {
-    if (!settings.evolution_api_url || !settings.evolution_api_key) {
-      toast.error('Preencha a URL e a API Key da Evolution antes de testar');
+  const handleTestUazapiConnection = async () => {
+    if (!settings.uazapi_url || !settings.uazapi_key) {
+      toast.error('Preencha a URL e a API Key da UAZAPI antes de testar');
       return;
     }
-    setEvolutionTesting(true);
-    setEvolutionTestResult(null);
+    setUazapiTesting(true);
+    setUazapiTestResult(null);
     try {
       const { data, error } = await supabase.functions.invoke('test-evolution-connection', {
         body: {
-          api_url: settings.evolution_api_url,
-          api_key: settings.evolution_api_key,
+          api_url: settings.uazapi_url,
+          api_key: settings.uazapi_key,
           instance_name: '__health_check__',
           provider_type: 'evolution_self_hosted',
         }
@@ -300,25 +300,24 @@ const ApiSettings = forwardRef<ApiSettingsRef>((props, ref) => {
       if (error) throw error;
 
       if (data?.success) {
-        setEvolutionTestResult({ ok: true, message: 'Conexão com a Evolution API estabelecida!' });
-        toast.success('Evolution API conectada! ✅');
+        setUazapiTestResult({ ok: true, message: 'Conexão com a UAZAPI estabelecida!' });
+        toast.success('UAZAPI conectada! ✅');
       } else if (data?.status === 401 || data?.status === 403) {
-        setEvolutionTestResult({ ok: false, message: 'API Key inválida ou sem permissão.' });
+        setUazapiTestResult({ ok: false, message: 'API Key inválida ou sem permissão.' });
         toast.error('API Key inválida');
       } else if (data?.details) {
-        // Got a response from the server (even if instance not found) = API is reachable
-        setEvolutionTestResult({ ok: true, message: 'Servidor Evolution API acessível e respondendo!' });
-        toast.success('Evolution API acessível! ✅');
+        setUazapiTestResult({ ok: true, message: 'Servidor UAZAPI acessível e respondendo!' });
+        toast.success('UAZAPI acessível! ✅');
       } else {
-        setEvolutionTestResult({ ok: false, message: data?.error || 'Não foi possível conectar à Evolution API.' });
+        setUazapiTestResult({ ok: false, message: data?.error || 'Não foi possível conectar à UAZAPI.' });
         toast.error('Falha na conexão');
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erro desconhecido';
-      setEvolutionTestResult({ ok: false, message: msg });
+      setUazapiTestResult({ ok: false, message: msg });
       toast.error('Erro ao testar conexão');
     } finally {
-      setEvolutionTesting(false);
+      setUazapiTesting(false);
     }
   };
 

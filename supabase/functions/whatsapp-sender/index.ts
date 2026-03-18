@@ -212,10 +212,10 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
     ? instance.instance_id_external
     : instance.instance_name;
 
-  // Headers de autenticação
+  // Headers de autenticação UAZAPI
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'apikey': secrets.api_key,
+    'token': secrets.api_key,
   };
 
   let endpoint: string;

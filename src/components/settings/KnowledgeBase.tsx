@@ -271,7 +271,7 @@ const KnowledgeBase: React.FC = () => {
       </div>
 
       <p className="text-xs text-muted-foreground mb-4">
-        Adicione documentos e textos para a Nina usar como contexto nas conversas. 
+        Adicione documentos e textos para a Sofia usar como contexto nas conversas. 
         O conteúdo será indexado automaticamente com busca semântica (RAG).
       </p>
 
@@ -344,7 +344,7 @@ const KnowledgeBase: React.FC = () => {
         <div className="text-center py-8 text-muted-foreground">
           <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-50" />
           <p className="text-sm">Nenhum documento adicionado</p>
-          <p className="text-xs mt-1">Adicione textos ou arquivos para enriquecer as respostas da Nina</p>
+          <p className="text-xs mt-1">Adicione textos ou arquivos para enriquecer as respostas da Sofia</p>
         </div>
       ) : (
         <div className="space-y-2">

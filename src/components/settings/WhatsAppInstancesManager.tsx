@@ -188,7 +188,7 @@ export function WhatsAppInstancesManager({ evolutionApiUrl, evolutionApiKey }: W
           },
         });
         if (fnError) {
-          console.warn('[handleSaveSettings] Evolution API sync failed (non-fatal):', fnError);
+          console.warn('[handleSaveSettings] UAZAPI sync failed (non-fatal):', fnError);
           toast.warning('Configurações salvas localmente, mas falhou ao sincronizar com a API');
         }
       }

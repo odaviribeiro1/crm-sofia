@@ -2211,7 +2211,7 @@ const transformConversation = (dbConv: DBConversation): UIConversation => {
                       <span className="text-violet-400">•</span>
                       <div>
                         <span className="font-bold">Agendamento Nativo:</span>{' '}
-                        <span className="text-slate-400">Integrado via Nina (create/reschedule/cancel appointment)</span>
+                        <span className="text-slate-400">Integrado via Sofia (create/reschedule/cancel appointment)</span>
                       </div>
                     </li>
                   </ul>

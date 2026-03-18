@@ -63,7 +63,7 @@ export const StepWhatsApp: React.FC<StepWhatsAppProps> = ({
 
   // Auto-generate verify token if empty or default
   useEffect(() => {
-    if (!verifyToken || verifyToken === 'viver-de-ia-nina-webhook') {
+    if (!verifyToken || verifyToken === 'empresa-x-nina-webhook') {
       onVerifyTokenChange(generateVerifyToken());
     }
   }, []);

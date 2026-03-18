@@ -87,7 +87,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
         </motion.div>
         <h3 className="text-xl font-semibold text-foreground mb-2">UAZAPI</h3>
         <p className="text-muted-foreground text-sm max-w-md mx-auto">
-          Configure a conexão com sua UAZAPI para gerenciar o WhatsApp.
+          Configure a conexão com sua UAZAPI. Use o <strong>Admin Token</strong> para gerenciar instâncias.
         </p>
       </motion.div>
 
@@ -112,7 +112,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
         <motion.div variants={itemVariants} className="space-y-2">
           <Label htmlFor="evolutionKey" className="flex items-center gap-2">
             <Key className="w-4 h-4 text-muted-foreground" />
-            API Key
+            Admin Token
           </Label>
           <Input
             id="evolutionKey"
@@ -122,7 +122,7 @@ export const StepEvolutionWhatsApp: React.FC<StepEvolutionWhatsAppProps> = ({
               onEvolutionApiKeyChange(e.target.value);
               setTestResult(null);
             }}
-            placeholder="Sua chave de API"
+            placeholder="Seu admin token da UAZAPI"
             className="font-mono text-sm"
           />
         </motion.div>

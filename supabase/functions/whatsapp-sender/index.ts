@@ -212,44 +212,36 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
     ? instance.instance_id_external
     : instance.instance_name;
 
-  // Headers de autenticação UAZAPI
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    'token': secrets.api_key,
-  };
+  // UAZAPI: auth via query string
+  const baseUrl = secrets.api_url.replace(/\/$/, '');
+  const tokenParam = `token=${encodeURIComponent(secrets.api_key)}`;
 
   let endpoint: string;
   let payload: any;
-  let presenceType: string;
-
-  const baseUrl = secrets.api_url.replace(/\/$/, '');
 
   switch (queueItem.message_type) {
     case 'text':
-      endpoint = `${baseUrl}/sendText`;
+      endpoint = `${baseUrl}/send/text?${tokenParam}`;
       payload = { number: targetNumber, text: queueItem.content };
-      presenceType = 'composing';
       break;
 
     case 'audio':
-      endpoint = `${baseUrl}/sendAudio`;
+      endpoint = `${baseUrl}/send/audio?${tokenParam}`;
       payload = { number: targetNumber, audio: queueItem.media_url };
-      presenceType = 'recording';
       break;
 
     case 'image':
-      endpoint = `${baseUrl}/sendMedia`;
+      endpoint = `${baseUrl}/send/media?${tokenParam}`;
       payload = {
         number: targetNumber,
         mediatype: 'image',
         media: queueItem.media_url,
         caption: queueItem.content || '',
       };
-      presenceType = 'composing';
       break;
 
     case 'document':
-      endpoint = `${baseUrl}/sendMedia`;
+      endpoint = `${baseUrl}/send/media?${tokenParam}`;
       payload = {
         number: targetNumber,
         mediatype: 'document',
@@ -257,29 +249,21 @@ async function sendViaUazapi(supabase: any, queueItem: any, secretsCache: Record
         caption: queueItem.content || '',
         fileName: queueItem.metadata?.fileName || 'document',
       };
-      presenceType = 'composing';
       break;
 
     default:
-      endpoint = `${baseUrl}/sendText`;
+      endpoint = `${baseUrl}/send/text?${tokenParam}`;
       payload = { number: targetNumber, text: queueItem.content };
-      presenceType = 'composing';
   }
 
-  // Enviar presence ("digitando..." ou "gravando...") antes da mensagem - UAZAPI pode não suportar esse endpoint
-  // Mantemos como non-fatal
-  try {
-    console.log(`[Sender] Skipping presence for UAZAPI (not supported in standard API)`);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-  } catch (presenceErr) {
-    console.log('[Sender] Presence error (non-fatal):', presenceErr);
-  }
+  // Pequena pausa antes de enviar (simula digitação)
+  await new Promise(resolve => setTimeout(resolve, 1000));
 
-  console.log(`[Sender] UAZAPI endpoint: ${endpoint}`);
+  console.log(`[Sender] UAZAPI endpoint: ${baseUrl}/send/...`);
 
   const response = await fetch(endpoint, {
     method: 'POST',
-    headers,
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
 

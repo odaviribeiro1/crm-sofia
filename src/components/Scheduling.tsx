@@ -321,7 +321,7 @@ const Scheduling: React.FC = () => {
                                     className={`text-[10px] px-2 py-1 rounded border truncate font-medium cursor-pointer relative ${getEventTypeColor(app.type)}`}
                                     onClick={(e) => handleAppointmentClick(app, e)}
                                 >
-                                    {app.metadata?.source === 'nina_ai' && (
+                                    {app.metadata?.source === 'sofia_ai' && (
                                       <Bot className="w-2.5 h-2.5 inline-block mr-0.5 text-primary" />
                                     )}
                                     {app.time} - {app.title}

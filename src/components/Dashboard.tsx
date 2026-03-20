@@ -30,6 +30,11 @@ const Dashboard: React.FC = () => {
   const [period, setPeriod] = useState<PeriodFilter>('today');
   const [wizardOpen, setWizardOpen] = useState(false);
 
+  // Reset onboarding state on mount
+  useEffect(() => {
+    localStorage.removeItem('onboarding_wizard_seen');
+  }, []);
+
   // Auto-open wizard for first-time admin users only
   useEffect(() => {
     if (!user) return;

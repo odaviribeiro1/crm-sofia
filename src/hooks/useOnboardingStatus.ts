@@ -154,14 +154,9 @@ export function useOnboardingStatus(): OnboardingStatus {
                 isComplete: !!settings.elevenlabs_api_key,
               };
             case 'business_hours':
-              const isDefaultConfig = 
-                settings.timezone === 'America/Sao_Paulo' &&
-                settings.business_hours_start === '09:00:00' &&
-                settings.business_hours_end === '18:00:00' &&
-                JSON.stringify(settings.business_days) === '[1,2,3,4,5]';
               return {
                 ...step,
-                isComplete: !isDefaultConfig || hasSeenWizard,
+                isComplete: hasSeenWizard,
               };
             case 'verification':
               return {

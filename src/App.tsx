@@ -55,6 +55,7 @@ const AppLayout: React.FC = () => {
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
           <CompanySettingsProvider>

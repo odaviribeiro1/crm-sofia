@@ -16,6 +16,7 @@ import SetPassword from './pages/SetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import { CompanySettingsProvider } from './hooks/useCompanySettings';
+import { ThemeProvider } from './hooks/useTheme';
 import { AuthProvider } from './hooks/useAuth';
 import { DesignSettingsProvider } from './hooks/useDesignSettings';
 import { Toaster } from 'sonner';

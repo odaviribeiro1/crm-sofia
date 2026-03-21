@@ -155,6 +155,9 @@ const SidebarContent = () => {
         </nav>
       </div>
 
+      {/* Theme Toggle */}
+      <ThemeToggle />
+
       {/* User Footer */}
       <div className="pt-4 relative">
         <div className="absolute top-0 left-3 right-3 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />

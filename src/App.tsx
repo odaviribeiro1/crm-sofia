@@ -16,6 +16,7 @@ import SetPassword from './pages/SetPassword';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import { CompanySettingsProvider } from './hooks/useCompanySettings';
+import { ThemeProvider } from './hooks/useTheme';
 import { AuthProvider } from './hooks/useAuth';
 import { DesignSettingsProvider } from './hooks/useDesignSettings';
 import { Toaster } from 'sonner';
@@ -54,6 +55,7 @@ const AppLayout: React.FC = () => {
 const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
       <BrowserRouter>
         <AuthProvider>
           <CompanySettingsProvider>
@@ -93,6 +95,7 @@ const App: React.FC = () => {
           </CompanySettingsProvider>
         </AuthProvider>
       </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };

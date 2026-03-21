@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
-import { LayoutDashboard, MessageSquare, Users, Settings as SettingsIcon, LogOut, ShieldCheck, Calendar, Kanban, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, MessageSquare, Users, Settings as SettingsIcon, LogOut, ShieldCheck, Calendar, Kanban, ShieldAlert, Sun, Moon } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useCompanySettings } from '@/hooks/useCompanySettings';
 import { useDesignSettings } from '@/hooks/useDesignSettings';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
 import { Sidebar, SidebarBody, SidebarLink, useSidebar } from '@/components/ui/sidebar';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
+import { Switch } from '@/components/ui/switch';
 
 const menuItems = [
   { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -69,6 +71,35 @@ const LogoIcon = () => {
   );
 };
 
+const ThemeToggle = () => {
+  const { theme, toggleTheme } = useTheme();
+  const { open } = useSidebar();
+  const isDark = theme === 'dark';
+
+  return (
+    <div className="px-3 py-2">
+      <div className="flex items-center gap-3">
+        <Sun className={`h-4 w-4 flex-shrink-0 transition-colors ${isDark ? 'text-sidebar-foreground/40' : 'text-primary'}`} />
+        <motion.div
+          animate={{
+            display: open ? "flex" : "none",
+            opacity: open ? 1 : 0,
+          }}
+          transition={{ duration: 0.2 }}
+          className="flex items-center gap-2 flex-1"
+        >
+          <Switch
+            checked={isDark}
+            onCheckedChange={toggleTheme}
+            className="data-[state=checked]:bg-sidebar-primary data-[state=unchecked]:bg-sidebar-accent"
+          />
+          <Moon className={`h-4 w-4 transition-colors ${isDark ? 'text-primary' : 'text-sidebar-foreground/40'}`} />
+        </motion.div>
+      </div>
+    </div>
+  );
+};
+
 const SidebarContent = () => {
   const { companyName } = useCompanySettings();
   const { user, signOut } = useAuth();
@@ -123,6 +154,9 @@ const SidebarContent = () => {
           ))}
         </nav>
       </div>
+
+      {/* Theme Toggle */}
+      <ThemeToggle />
 
       {/* User Footer */}
       <div className="pt-4 relative">

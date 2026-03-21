@@ -95,6 +95,7 @@ const App: React.FC = () => {
           </CompanySettingsProvider>
         </AuthProvider>
       </BrowserRouter>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
